@@ -21,17 +21,14 @@ public class Boi {
     @OneToOne
     private Raca raca;
 
-    @ManyToOne
-    private Lote lote;
 
     private EstadoBoi estadoBoi;
     public Boi(int numero, String raca){ }
 
 
-    public Boi(int numero, Raca raca, Lote lote, EstadoBoi estadoBoi) {
+    public Boi(int numero, Raca raca, EstadoBoi estadoBoi) {
         this.numero = numero;
         this.raca = raca;
-        this.lote = lote;
         this.estadoBoi = estadoBoi;
     }
 
@@ -71,13 +68,6 @@ public class Boi {
         this.pesagens = pesagens;
     }
 
-    public Lote getLote() {
-        return lote;
-    }
-
-    public void setLote(Lote lote) {
-        this.lote = lote;
-    }
 
     public EstadoBoi getEstadoBoi() {
         return estadoBoi;
@@ -93,14 +83,13 @@ public class Boi {
         if (o == null || getClass() != o.getClass()) return false;
         Boi boi = (Boi) o;
         return Objects.equals(this.numero, boi.getNumero()) &&
-                Objects.equals(lote, boi.getLote()) &&
                 Objects.equals(raca, boi.getRaca()) &&
                 Objects.equals(estadoBoi, boi.getEstadoBoi());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(numero, raca, lote, estadoBoi);
+        return Objects.hash(numero, raca, estadoBoi);
     }
 
     @Override
@@ -109,7 +98,6 @@ public class Boi {
                 "id=" + id +
                 ", numero=" + numero +
                 ", raca='" + raca + '\'' +
-                ", lote=" + lote +  '\'' +
                 ", estadoBoi=" + estadoBoi +
                 '}';
     }
