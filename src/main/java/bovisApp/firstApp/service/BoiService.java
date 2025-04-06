@@ -14,7 +14,12 @@ public interface BoiService {
 
     Boi cadastraBoi(BoiRequestDTO boiRequestDTO);
 
+
+    List<Boi> cadastraBoisComprados(List<BoiRequestDTO> bois);
+
     Boi editaBoi(BoiRequestDTO boiRequestDTO, Long boiId);
+
+    List<Boi> cadastraBoisVendidos(List<Long> boisIds);
 
     Boi deleteBoi(Long id);
 }

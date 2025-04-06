@@ -1,6 +1,6 @@
 package bovisApp.firstApp.model.enumeration;
 
-public enum OperacaoTransacao {
+public enum TransacaoOperacao {
     COMPRA,
     VENDA
 }

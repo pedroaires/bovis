@@ -5,7 +5,6 @@ import bovisApp.firstApp.exception.boi.BoiInvalidoException;
 import bovisApp.firstApp.exception.boi.BoiJaExisteException;
 import bovisApp.firstApp.exception.boi.BoiNaoEncontradoException;
 import bovisApp.firstApp.model.Boi;
-import bovisApp.firstApp.model.Lote;
 import bovisApp.firstApp.model.Raca;
 import bovisApp.firstApp.model.enumeration.EstadoBoi;
 import bovisApp.firstApp.repository.BoiRepository;
@@ -35,9 +34,6 @@ class BoiServiceImplTest {
     private BoiRepository boiRepository;
 
     @Mock
-    private LoteService loteService;
-
-    @Mock
     private RacaService racaService;
 
     private static final String[] RACAS = {"Angus", "Brangus", "Nelore", "Guzera", "Tabapua"};
@@ -57,26 +53,25 @@ class BoiServiceImplTest {
         return (long) (Math.random() * 1000);
     }
 
-    private BoiRequestDTO criaBoiRequestDTO(Integer numero, String raca, Long loteId, String estadoBoi){
+    private BoiRequestDTO criaBoiRequestDTO(Integer numero, String raca,String estadoBoi){
         BoiRequestDTO boiRequestDTO = new BoiRequestDTO();
         boiRequestDTO.setNumero(numero);
         boiRequestDTO.setRaca(raca);
-        boiRequestDTO.setLoteId(loteId);
         boiRequestDTO.setEstadoBoi(estadoBoi);
         return boiRequestDTO;
     }
     @BeforeEach
     void setUp() {
-        boiService_underTest = new BoiServiceImpl(boiRepository, loteService, racaService);
+        boiService_underTest = new BoiServiceImpl(boiRepository, racaService);
     }
 
     @Test
     void deveRetornarBois() {
         // given
         List<Boi> bois = new ArrayList<>();
-        bois.add(new Boi(1, new Raca("Angus"), new Lote(), EstadoBoi.NA_FAZENDA));
-        bois.add(new Boi(2, new Raca("Brangus"), new Lote(), EstadoBoi.VENDIDO));
-        bois.add(new Boi(3, new Raca("Nelore"), new Lote(), EstadoBoi.MORTO));
+        bois.add(new Boi(1, new Raca("Angus"), EstadoBoi.NA_FAZENDA));
+        bois.add(new Boi(2, new Raca("Brangus"), EstadoBoi.VENDIDO));
+        bois.add(new Boi(3, new Raca("Nelore"),  EstadoBoi.MORTO));
         // when
         when(boiRepository.findAll()).thenReturn(bois);
         List<Boi> response = boiService_underTest.getBois();
@@ -90,15 +85,12 @@ class BoiServiceImplTest {
         Integer numero = geraNumeroAleatorio();
         String racaStr = geraRacaStrAleatoria();
         String estadoBoiStr = gerarEstadoStrAleatorio();
-        Long loteId = geraIdAleatorio();
         Long boiId = geraIdAleatorio();
 
         EstadoBoi estadoBoi = EstadoBoi.getEstadoBoi(estadoBoiStr);
 
         Raca raca = new Raca(racaStr);
-        Lote lote = new Lote();
-        lote.setId(loteId);
-        Boi boiEsperado = new Boi(numero, raca, lote, estadoBoi);
+        Boi boiEsperado = new Boi(numero, raca, estadoBoi);
 
         when(boiRepository.findById(boiId)).thenReturn(Optional.of(boiEsperado));
         Boi response = boiService_underTest.getBoiById(boiId);
@@ -119,23 +111,19 @@ class BoiServiceImplTest {
         Integer numero = geraNumeroAleatorio();
         String racaStr = geraRacaStrAleatoria();
         String estadoBoiStr = gerarEstadoStrAleatorio();
-        Long loteId = geraIdAleatorio();
 
         BoiRequestDTO boiRequestDTO =
-                criaBoiRequestDTO(numero, racaStr, loteId, estadoBoiStr);
+                criaBoiRequestDTO(numero, racaStr, estadoBoiStr);
         EstadoBoi estadoBoi = EstadoBoi.getEstadoBoi(estadoBoiStr);
 
         Raca raca = new Raca(racaStr);
         when(racaService.getRacaByNome(racaStr)).thenReturn(raca);
-        Lote lote = new Lote();
-        lote.setId(loteId);
-        when(loteService.getLoteById(loteId)).thenReturn(lote);
+
 
         Boi response = boiService_underTest.cadastraBoi(boiRequestDTO);
 
-        Boi boiEsperado = new Boi(numero, raca, lote, estadoBoi);
+        Boi boiEsperado = new Boi(numero, raca, estadoBoi);
 
-        verify(loteService).getLoteById(loteId);
         verify(racaService).getRacaByNome(racaStr);
 
         ArgumentCaptor<Boi> boiArgumentCaptor = ArgumentCaptor.forClass(Boi.class);
@@ -144,68 +132,15 @@ class BoiServiceImplTest {
         assertThat(response).isEqualTo(boiEsperado);
     }
 
-    @Test
-    void naoDeveCadastrarBoiExistente(){
-        Integer numero = geraNumeroAleatorio();
-        String racaStr = geraRacaStrAleatoria();
-        String estadoBoiStr = gerarEstadoStrAleatorio();
-        Long loteId = geraIdAleatorio();
-
-        BoiRequestDTO boiRequestDTO =
-                criaBoiRequestDTO(numero, racaStr, loteId, estadoBoiStr);
-        EstadoBoi estadoBoi = EstadoBoi.getEstadoBoi(estadoBoiStr);
-
-        Raca raca = new Raca(racaStr);
-        when(racaService.getRacaByNome(racaStr)).thenReturn(raca);
-        Lote lote = new Lote();
-        lote.setId(loteId);
-        when(loteService.getLoteById(loteId)).thenReturn(lote);
-
-        Boi boiEsperado = new Boi(numero, raca, lote, estadoBoi);
-        when(boiRepository.findByNumeroAndLoteId(numero, loteId))
-                .thenReturn(Optional.of(boiEsperado));
-
-        assertThatThrownBy(() -> boiService_underTest.cadastraBoi(boiRequestDTO))
-                .isInstanceOf(BoiJaExisteException.class)
-                .hasMessage("Boi com mesmo número e lote já cadastrado");
-    }
-
-    @Test
-    void deveCadastrarBoiLoteNulo() {
-        Integer numero = geraNumeroAleatorio();
-        String racaStr = geraRacaStrAleatoria();
-        String estadoBoiStr = gerarEstadoStrAleatorio();
-        Long loteId = null;
-        BoiRequestDTO boiRequestDTO =
-                criaBoiRequestDTO(numero, racaStr, loteId, estadoBoiStr);
-        EstadoBoi estadoBoi = EstadoBoi.getEstadoBoi(estadoBoiStr);
-
-        Raca raca = new Raca(racaStr);
-        when(racaService.getRacaByNome(racaStr)).thenReturn(raca);
-        Lote lote = new Lote();
-        when(loteService.getLoteById(loteId)).thenReturn(lote);
-
-        Boi response = boiService_underTest.cadastraBoi(boiRequestDTO);
-        Boi boiEsperado = new Boi(numero, raca, lote, estadoBoi);
-
-        verify(loteService).getLoteById(loteId);
-        verify(racaService).getRacaByNome(racaStr);
-
-        ArgumentCaptor<Boi> boiArgumentCaptor = ArgumentCaptor.forClass(Boi.class);
-        verify(boiRepository).save(boiArgumentCaptor.capture());
-        assertThat(boiArgumentCaptor.getValue()).isEqualTo(boiEsperado);
-        assertThat(response).isEqualTo(boiEsperado);
-    }
 
     @Test
     void naoDeveCadastrarBoiNumeroNulo() {
         Integer numero = null;
         String racaStr = geraRacaStrAleatoria();
         String estadoBoiStr = gerarEstadoStrAleatorio();
-        Long loteId = geraIdAleatorio();
 
         BoiRequestDTO boiRequestDTO =
-                criaBoiRequestDTO(numero, racaStr, loteId, estadoBoiStr);
+                criaBoiRequestDTO(numero, racaStr, estadoBoiStr);
 
         assertThatThrownBy(() -> boiService_underTest.cadastraBoi(boiRequestDTO))
                 .isInstanceOf(BoiInvalidoException.class)
@@ -218,10 +153,9 @@ class BoiServiceImplTest {
         Integer numero = geraNumeroAleatorio();
         String racaStr = geraRacaStrAleatoria();
         String estadoBoiStr = "estado invalido";
-        Long loteId = geraIdAleatorio();
 
         BoiRequestDTO boiRequestDTO =
-                criaBoiRequestDTO(numero, racaStr, loteId, estadoBoiStr);
+                criaBoiRequestDTO(numero, racaStr, estadoBoiStr);
 
         assertThatThrownBy(() -> boiService_underTest.cadastraBoi(boiRequestDTO))
                 .isInstanceOf(BoiInvalidoException.class)
@@ -234,24 +168,19 @@ class BoiServiceImplTest {
         Integer numero = geraNumeroAleatorio();
         String racaStr = null;
         String estadoBoiStr = gerarEstadoStrAleatorio();
-        Long loteId = geraIdAleatorio();
 
         BoiRequestDTO boiRequestDTO =
-                criaBoiRequestDTO(numero, racaStr, loteId, estadoBoiStr);
+                criaBoiRequestDTO(numero, racaStr, estadoBoiStr);
         EstadoBoi estadoBoi = EstadoBoi.getEstadoBoi(estadoBoiStr);
 
         Raca raca = new Raca(racaStr);
         when(racaService.getRacaByNome(racaStr)).thenReturn(raca);
-        Lote lote = new Lote();
-        lote.setId(loteId);
-        when(loteService.getLoteById(loteId)).thenReturn(lote);
 
         Boi response = boiService_underTest.cadastraBoi(boiRequestDTO);
 
-        Boi boiEsperado = new Boi(numero, raca, lote, estadoBoi);
+        Boi boiEsperado = new Boi(numero, raca, estadoBoi);
 
         verify(racaService).getRacaByNome(racaStr);
-        verify(loteService).getLoteById(loteId);
 
         ArgumentCaptor<Boi> boiArgumentCaptor = ArgumentCaptor.forClass(Boi.class);
         verify(boiRepository).save(boiArgumentCaptor.capture());
@@ -266,24 +195,21 @@ class BoiServiceImplTest {
         Integer numero = geraNumeroAleatorio();
         String racaStr = geraRacaStrAleatoria();
         String estadoBoiStr = gerarEstadoStrAleatorio();
-        Long loteId = geraIdAleatorio();
         Long boiId = geraIdAleatorio();
 
         BoiRequestDTO boiRequestDTO =
-                criaBoiRequestDTO(numero, racaStr, loteId, estadoBoiStr);
+                criaBoiRequestDTO(numero, racaStr, estadoBoiStr);
         EstadoBoi estadoBoi = EstadoBoi.getEstadoBoi(estadoBoiStr);
 
         Raca raca = new Raca(racaStr);
         when(racaService.getRacaByNome(racaStr)).thenReturn(raca);
-        Lote lote = new Lote();
-        when(loteService.getLoteById(loteId)).thenReturn(lote);
-        Boi boiEsperado = new Boi(numero, raca, lote, estadoBoi);
+
+        Boi boiEsperado = new Boi(numero, raca, estadoBoi);
         when(boiRepository.findById(boiId)).thenReturn(Optional.of(boiEsperado));
 
         Boi response = boiService_underTest.editaBoi(boiRequestDTO, boiId);
 
         verify(racaService).getRacaByNome(racaStr);
-        verify(loteService).getLoteById(loteId);
 
         ArgumentCaptor<Boi> boiArgumentCaptor = ArgumentCaptor.forClass(Boi.class);
         verify(boiRepository).save(boiArgumentCaptor.capture());
@@ -296,11 +222,10 @@ class BoiServiceImplTest {
         Integer numero = geraNumeroAleatorio();
         String racaStr = geraRacaStrAleatoria();
         String estadoBoiStr = gerarEstadoStrAleatorio();
-        Long loteId = geraIdAleatorio();
         Long boiId = geraIdAleatorio();
 
         BoiRequestDTO boiRequestDTO =
-                criaBoiRequestDTO(numero, racaStr, loteId, estadoBoiStr);
+                criaBoiRequestDTO(numero, racaStr, estadoBoiStr);
 
         when(boiRepository.findById(boiId)).thenReturn(Optional.empty());
 
@@ -313,11 +238,10 @@ class BoiServiceImplTest {
         Integer numero = null;
         String racaStr = geraRacaStrAleatoria();
         String estadoBoiStr = gerarEstadoStrAleatorio();
-        Long loteId = geraIdAleatorio();
         Long boiId = geraIdAleatorio();
 
         BoiRequestDTO boiRequestDTO =
-                criaBoiRequestDTO(numero, racaStr, loteId, estadoBoiStr);
+                criaBoiRequestDTO(numero, racaStr, estadoBoiStr);
 
         when(boiRepository.findById(boiId)).thenReturn(Optional.of(new Boi()));
 
@@ -332,11 +256,10 @@ class BoiServiceImplTest {
         Integer numero = geraNumeroAleatorio();
         String racaStr = geraRacaStrAleatoria();
         String estadoBoiStr = "estado invalido";
-        Long loteId = geraIdAleatorio();
         Long boiId = geraIdAleatorio();
 
         BoiRequestDTO boiRequestDTO =
-                criaBoiRequestDTO(numero, racaStr, loteId, estadoBoiStr);
+                criaBoiRequestDTO(numero, racaStr, estadoBoiStr);
 
         when(boiRepository.findById(boiId)).thenReturn(Optional.of(new Boi()));
 
@@ -356,8 +279,7 @@ class BoiServiceImplTest {
         EstadoBoi estadoBoi = EstadoBoi.getEstadoBoi(estadoBoiStr);
 
         Raca raca = new Raca(racaStr);
-        Lote lote = new Lote();
-        Boi boiEsperado = new Boi(numero, raca, lote, estadoBoi);
+        Boi boiEsperado = new Boi(numero, raca, estadoBoi);
 
         when(boiRepository.findById(boiId)).thenReturn(Optional.of(boiEsperado));
 

@@ -5,14 +5,11 @@ import java.util.Objects;
 public class BoiRequestDTO {
     private Integer numero;
     private String raca;
-    private Long loteId;
-
     private String estadoBoi;
 
-    public BoiRequestDTO(Integer numero, String raca, Long loteId, String estadoBoi) {
+    public BoiRequestDTO(Integer numero, String raca, String estadoBoi) {
         this.numero = numero;
         this.raca = raca;
-        this.loteId = loteId;
         this.estadoBoi = estadoBoi;
     }
 
@@ -36,14 +33,6 @@ public class BoiRequestDTO {
         this.raca = raca;
     }
 
-    public Long getLoteId() {
-        return loteId;
-    }
-
-    public void setLoteId(Long loteId) {
-        this.loteId = loteId;
-    }
-
     public String getEstadoBoi() {
         return estadoBoi;
     }
@@ -57,11 +46,11 @@ public class BoiRequestDTO {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         BoiRequestDTO that = (BoiRequestDTO) o;
-        return Objects.equals(numero, that.numero) && Objects.equals(raca, that.raca) && Objects.equals(loteId, that.loteId) && Objects.equals(estadoBoi, that.estadoBoi);
+        return Objects.equals(numero, that.numero) && Objects.equals(raca, that.raca)  && Objects.equals(estadoBoi, that.estadoBoi);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(numero, raca, loteId, estadoBoi);
+        return Objects.hash(numero, raca, estadoBoi);
     }
 }

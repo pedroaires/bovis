@@ -23,7 +23,7 @@ public class BoiAPIController {
 
     @GetMapping(value = "/listBois")
     @ResponseStatus(HttpStatus.OK)
-    public List<BoiResponseDTO> getBoi(){
+    public List<BoiResponseDTO> getBois(){
         List<BoiResponseDTO> responseList = boiService.getBois().stream().map(BoiResponseDTO::new).collect(Collectors.toList());
         return responseList;
     }

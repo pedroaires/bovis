@@ -1,10 +1,11 @@
 package bovisApp.firstApp.model;
 
 import bovisApp.firstApp.model.enumeration.ModeloTransacao;
-import bovisApp.firstApp.model.enumeration.OperacaoTransacao;
+import bovisApp.firstApp.model.enumeration.TransacaoOperacao;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -15,10 +16,10 @@ public class Transacao {
     @GeneratedValue
     private Long id;
     private BigDecimal valor;
-    private Date data;
+    private LocalDate data;
     private String descricao;
     private ModeloTransacao modeloTransacao;
-    private OperacaoTransacao operacao;
+    private TransacaoOperacao operacao;
 
     @ManyToMany
     @JoinTable(
@@ -32,7 +33,7 @@ public class Transacao {
     @OneToOne
     private Transacao transacaoRelacionada;
 
-    public Transacao(BigDecimal valor, Date data, String descricao, ModeloTransacao modeloTransacao, OperacaoTransacao operacao, List<Boi> bois, String contraParte, Transacao transacaoRelacionada) {
+    public Transacao(BigDecimal valor, LocalDate data, String descricao, ModeloTransacao modeloTransacao, TransacaoOperacao operacao, List<Boi> bois, String contraParte, Transacao transacaoRelacionada) {
         this.valor = valor;
         this.data = data;
         this.descricao = descricao;
@@ -63,11 +64,11 @@ public class Transacao {
         this.valor = valor;
     }
 
-    public Date getData() {
+    public LocalDate getData() {
         return data;
     }
 
-    public void setData(Date data) {
+    public void setData(LocalDate data) {
         this.data = data;
     }
 
@@ -87,11 +88,11 @@ public class Transacao {
         this.modeloTransacao = modeloTransacao;
     }
 
-    public OperacaoTransacao getOperacao() {
+    public TransacaoOperacao getOperacao() {
         return operacao;
     }
 
-    public void setOperacao(OperacaoTransacao operacao) {
+    public void setOperacao(TransacaoOperacao operacao) {
         this.operacao = operacao;
     }
 

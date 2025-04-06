@@ -2,29 +2,26 @@ package bovisApp.firstApp.service;
 
 import bovisApp.firstApp.DTO.boi.BoiRequestDTO;
 import bovisApp.firstApp.exception.boi.BoiInvalidoException;
-import bovisApp.firstApp.exception.boi.BoiJaExisteException;
 import bovisApp.firstApp.exception.boi.BoiNaoEncontradoException;
 import bovisApp.firstApp.model.Boi;
-import bovisApp.firstApp.model.Lote;
 import bovisApp.firstApp.model.Raca;
 import bovisApp.firstApp.model.enumeration.EstadoBoi;
 import bovisApp.firstApp.repository.BoiRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import java.util.ArrayList;
+
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class BoiServiceImpl implements BoiService {
     private final BoiRepository boiRepository;
-    private final LoteService loteService;
     private final RacaService racaService;
 
     @Autowired
-    public BoiServiceImpl(BoiRepository boiRepository, LoteService loteService, RacaService racaService) {
+    public BoiServiceImpl(BoiRepository boiRepository, RacaService racaService) {
         this.boiRepository = boiRepository;
-        this.loteService = loteService;
         this.racaService = racaService;
     }
 
@@ -54,15 +51,16 @@ public class BoiServiceImpl implements BoiService {
         }
 
         Raca raca = racaService.getRacaByNome(boiRequestDTO.getRaca());
-        Lote lote = loteService.getLoteById(boiRequestDTO.getLoteId());
-        Optional<Boi> boiOp = boiRepository.findByNumeroAndLoteId(numero, lote.getId());
-        if(boiOp.isPresent()){
-            throw new BoiJaExisteException("Boi com mesmo número e lote já cadastrado");
-        }
-        Boi boi = new Boi(numero, raca, lote, estadoBoi);
 
+        Boi boi = new Boi(numero, raca, estadoBoi);
         boiRepository.save(boi);
         return boi;
+    }
+
+    @Override
+    public List<Boi> cadastraBoisComprados(List<BoiRequestDTO> boisDTO) {
+        List<Boi> bois = boisDTO.stream().map(this::cadastraBoi).collect(Collectors.toList());
+        return bois;
     }
 
     @Override
@@ -78,15 +76,41 @@ public class BoiServiceImpl implements BoiService {
             throw new BoiInvalidoException("Estado do boi é inválido. Use 'na_fazenda', 'vendido' ou 'morto'");
         }
         Raca raca = racaService.getRacaByNome(boiRequestDTO.getRaca());
-        Lote lote = loteService.getLoteById(boiRequestDTO.getLoteId());
 
         boi.setNumero(numero);
         boi.setRaca(raca);
-        boi.setLote(lote);
         boi.setEstadoBoi(estadoBoi);
         boiRepository.save(boi);
         return boi;
     }
+
+    @Override
+    public List<Boi> cadastraBoisVendidos(List<Long> boisIds){
+        if(boisIds == null || boisIds.isEmpty())
+            throw new IllegalArgumentException("Ids dos bois não podem ser nulos ou estarem vazio");
+
+        List<Boi> bois = boisIds.stream().map(this::atualizaBoiVendido).collect(Collectors.toList());
+
+        return bois;
+    }
+
+    private Boi atualizaBoiVendido(Long boiId){
+        Boi boi = boiRepository.findById(boiId).orElseThrow(
+                () -> new BoiNaoEncontradoException("Boi não encontrado")
+        );
+        EstadoBoi estadoBoi = boi.getEstadoBoi();
+        if (estadoBoi.equals(EstadoBoi.NA_FAZENDA)) {
+            boi.setEstadoBoi(EstadoBoi.VENDIDO);
+        }
+        else {
+            throw new IllegalArgumentException("Boi só pode ser vendido se estiver NA_FAZENDA");
+        }
+        boi = boiRepository.save(boi);
+        return boi;
+
+    }
+
+
 
     @Override
     public Boi deleteBoi(Long id){

@@ -14,15 +14,18 @@ public class Boi {
     @GeneratedValue
     private Long id;
     private Integer numero;
-
     @OneToMany
     private Map<Date, Pesagem> pesagens;
-
     @OneToOne
     private Raca raca;
-
-
+    @ManyToOne
+    @JoinColumn(name = "compra_id")
+    private Transacao compra;
+    @ManyToOne
+    @JoinColumn(name = "venda_id")
+    private Transacao venda;
     private EstadoBoi estadoBoi;
+
     public Boi(int numero, String raca){ }
 
 
