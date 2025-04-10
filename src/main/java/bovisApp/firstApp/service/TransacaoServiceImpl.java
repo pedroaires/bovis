@@ -3,6 +3,8 @@ package bovisApp.firstApp.service;
 import bovisApp.firstApp.DTO.transacao.CompraRequestDTO;
 import bovisApp.firstApp.DTO.transacao.TransacaoRequestDTO;
 import bovisApp.firstApp.DTO.transacao.VendaRequestDTO;
+import bovisApp.firstApp.exception.transacao.TransacaoInvalidaException;
+import bovisApp.firstApp.exception.transacao.TransacaoNaoEncontradaException;
 import bovisApp.firstApp.model.Boi;
 import bovisApp.firstApp.model.Transacao;
 import bovisApp.firstApp.model.enumeration.ModeloTransacao;
@@ -10,7 +12,7 @@ import bovisApp.firstApp.model.enumeration.TransacaoOperacao;
 import bovisApp.firstApp.repository.TransacaoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import javax.persistence.EntityNotFoundException;
+
 import java.util.List;
 
 @Service
@@ -33,16 +35,14 @@ public class TransacaoServiceImpl implements TransacaoService{
     @Override
     public Transacao getLoteById(Long id) {
         Transacao transacao = transacaoRepository.findById(id).orElseThrow(
-                () -> new EntityNotFoundException("Transacao nao encontrada")
+                () -> new TransacaoNaoEncontradaException(id)
         );
         return transacao;
     }
 
     @Override
     public Transacao cadastraCompra(CompraRequestDTO compraRequestDTO) {
-        if(compraRequestDTO == null) {
-            throw new IllegalArgumentException("CompraRequestDTO não pode ser nulo");
-        }
+        validaTransacaoDTO(compraRequestDTO);
         List<Boi> boisComprados = boiService.cadastraBoisComprados(compraRequestDTO.getBois());
 
        return criarTransacao(compraRequestDTO, boisComprados, TransacaoOperacao.COMPRA);
@@ -50,9 +50,7 @@ public class TransacaoServiceImpl implements TransacaoService{
 
     @Override
     public Transacao cadastraVenda(VendaRequestDTO vendaRequestDTO) {
-        if(vendaRequestDTO == null) {
-            throw new IllegalArgumentException("VendaRequestDTO não pode ser nulo");
-        }
+        this.validaTransacaoDTO(vendaRequestDTO);
         List<Boi> boisVendidos = boiService.cadastraBoisVendidos(vendaRequestDTO.getBoisIds());
 
         return criarTransacao(vendaRequestDTO, boisVendidos, TransacaoOperacao.VENDA);
@@ -60,9 +58,8 @@ public class TransacaoServiceImpl implements TransacaoService{
 
     @Override
     public Transacao deletaTransacao(Long id) {
-        if(id == null) throw new IllegalArgumentException("ID nao pode ser nulo");
         Transacao transacao = transacaoRepository.findById(id).orElseThrow(
-                () -> new EntityNotFoundException("Transacao não encontrada")
+                () -> new TransacaoNaoEncontradaException(id)
         );
         transacaoRepository.delete(transacao);
         return transacao;
@@ -86,20 +83,23 @@ public class TransacaoServiceImpl implements TransacaoService{
     }
 
     private void validaTransacaoDTO(TransacaoRequestDTO transacaoRequestDTO){
+        if (transacaoRequestDTO == null){
+            throw new TransacaoInvalidaException("A transação não pode ser nula");
+        }
         if (transacaoRequestDTO.getData() == null){
-            throw new IllegalArgumentException("Data da transação não pode ser nula");
+            throw new TransacaoInvalidaException("Data da transação não pode ser nula");
         }
         if (transacaoRequestDTO.getContraParte() == null){
-            throw new IllegalArgumentException("Contraparte não pode ser nula");
+            throw new TransacaoInvalidaException("Contraparte não pode ser nula");
         }
         String modeloTransacaoStr = transacaoRequestDTO.getModeloTransacao();
         if(modeloTransacaoStr == null || modeloTransacaoStr.isEmpty()){
-            throw new IllegalArgumentException("ModeloTransacao não pode ser nulo ou vazio");
+            throw new TransacaoInvalidaException("ModeloTransacao não pode ser nulo ou vazio");
         }
         try{
             ModeloTransacao.valueOf(modeloTransacaoStr);
         } catch(IllegalArgumentException e){
-            throw new IllegalArgumentException("Valor inválido para ModeloTransacao");
+            throw new TransacaoInvalidaException("Valor inválido para ModeloTransacao");
         }
     }
 

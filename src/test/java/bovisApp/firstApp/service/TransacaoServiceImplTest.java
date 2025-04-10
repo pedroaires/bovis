@@ -2,6 +2,7 @@ package bovisApp.firstApp.service;
 
 import bovisApp.firstApp.DTO.transacao.CompraRequestDTO;
 import bovisApp.firstApp.DTO.transacao.VendaRequestDTO;
+import bovisApp.firstApp.exception.transacao.TransacaoInvalidaException;
 import bovisApp.firstApp.model.Boi;
 import bovisApp.firstApp.model.Transacao;
 import bovisApp.firstApp.model.enumeration.ModeloTransacao;
@@ -52,7 +53,7 @@ public class TransacaoServiceImplTest {
         dto.setDescricao("Compra de bois");
         dto.setModeloTransacao(ModeloTransacao.UNIDADE.name());
         dto.setContraParte("Fazenda Exemplo");
-        dto.setBois(Collections.emptyList()); // pode adicionar mocks se necessário
+        dto.setBois(Collections.emptyList());
         return dto;
     }
 
@@ -110,13 +111,13 @@ public class TransacaoServiceImplTest {
     @Test
     void naoDeveCadastrarCompraComDTOInvalido() {
         assertThatThrownBy(() -> transacaoService_underTest.cadastraCompra(null))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(TransacaoInvalidaException.class);
     }
 
     @Test
     void naoDeveCadastrarVendaComDTOInvalido() {
         assertThatThrownBy(() -> transacaoService_underTest.cadastraVenda(null))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(TransacaoInvalidaException.class);
     }
 
     @Test

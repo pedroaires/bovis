@@ -85,14 +85,12 @@ public class Boi {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Boi boi = (Boi) o;
-        return Objects.equals(this.numero, boi.getNumero()) &&
-                Objects.equals(raca, boi.getRaca()) &&
-                Objects.equals(estadoBoi, boi.getEstadoBoi());
+        return Objects.equals(this.id, boi.getId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(numero, raca, estadoBoi);
+        return Objects.hash(this.id);
     }
 
     @Override
