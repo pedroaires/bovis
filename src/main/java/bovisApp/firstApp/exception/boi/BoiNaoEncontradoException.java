@@ -1,9 +1,10 @@
 package bovisApp.firstApp.exception.boi;
 
-import javax.persistence.EntityNotFoundException;
+import bovisApp.firstApp.exception.EntidadeNaoEncontradaException;
 
-public class BoiNaoEncontradoException extends EntityNotFoundException {
-    public BoiNaoEncontradoException(String message){
-        super(message);
+
+public class BoiNaoEncontradoException extends EntidadeNaoEncontradaException {
+    public BoiNaoEncontradoException(Long id){
+        super("Boi", id);
     }
 }

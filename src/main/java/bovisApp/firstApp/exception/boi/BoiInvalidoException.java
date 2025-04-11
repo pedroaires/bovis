@@ -1,6 +1,8 @@
 package bovisApp.firstApp.exception.boi;
 
-public class BoiInvalidoException extends IllegalArgumentException{
+import bovisApp.firstApp.exception.EntidadeInvalidaException;
+
+public class BoiInvalidoException extends EntidadeInvalidaException {
     public BoiInvalidoException(String message){
         super(message);
     }

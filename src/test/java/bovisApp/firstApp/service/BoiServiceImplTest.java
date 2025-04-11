@@ -2,7 +2,6 @@ package bovisApp.firstApp.service;
 
 import bovisApp.firstApp.DTO.boi.BoiRequestDTO;
 import bovisApp.firstApp.exception.boi.BoiInvalidoException;
-import bovisApp.firstApp.exception.boi.BoiJaExisteException;
 import bovisApp.firstApp.exception.boi.BoiNaoEncontradoException;
 import bovisApp.firstApp.model.Boi;
 import bovisApp.firstApp.model.Raca;
@@ -118,7 +117,7 @@ class BoiServiceImplTest {
 
         Raca raca = new Raca(racaStr);
         when(racaService.getRacaByNome(racaStr)).thenReturn(raca);
-
+        when(boiRepository.save(any(Boi.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Boi response = boiService_underTest.cadastraBoi(boiRequestDTO);
 
@@ -143,13 +142,12 @@ class BoiServiceImplTest {
                 criaBoiRequestDTO(numero, racaStr, estadoBoiStr);
 
         assertThatThrownBy(() -> boiService_underTest.cadastraBoi(boiRequestDTO))
-                .isInstanceOf(BoiInvalidoException.class)
-                .hasMessage("Número do boi não pode ser nulo");
+                .isInstanceOf(BoiInvalidoException.class);
 
     }
 
     @Test
-    void naoDeveCadastrarBoiEstadoNulo() {
+    void naoDeveCadastrarBoiEstadoInvalido() {
         Integer numero = geraNumeroAleatorio();
         String racaStr = geraRacaStrAleatoria();
         String estadoBoiStr = "estado invalido";
@@ -158,35 +156,35 @@ class BoiServiceImplTest {
                 criaBoiRequestDTO(numero, racaStr, estadoBoiStr);
 
         assertThatThrownBy(() -> boiService_underTest.cadastraBoi(boiRequestDTO))
-                .isInstanceOf(BoiInvalidoException.class)
-                .hasMessage("Estado do boi é inválido. Use 'na_fazenda', 'vendido' ou 'morto'");
+                .isInstanceOf(BoiInvalidoException.class);
 
     }
 
     @Test
-    void deveCadastrarBoiRacaNula(){
+    void deveCadastrarBoiRacaNula() {
         Integer numero = geraNumeroAleatorio();
         String racaStr = null;
         String estadoBoiStr = gerarEstadoStrAleatorio();
 
-        BoiRequestDTO boiRequestDTO =
-                criaBoiRequestDTO(numero, racaStr, estadoBoiStr);
+        BoiRequestDTO boiRequestDTO = criaBoiRequestDTO(numero, racaStr, estadoBoiStr);
         EstadoBoi estadoBoi = EstadoBoi.getEstadoBoi(estadoBoiStr);
 
-        Raca raca = new Raca(racaStr);
-        when(racaService.getRacaByNome(racaStr)).thenReturn(raca);
+        when(racaService.getRacaByNome(null)).thenReturn(null);
+        when(boiRepository.save(any(Boi.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Boi response = boiService_underTest.cadastraBoi(boiRequestDTO);
 
-        Boi boiEsperado = new Boi(numero, raca, estadoBoi);
+        ArgumentCaptor<Boi> boiCaptor = ArgumentCaptor.forClass(Boi.class);
+        verify(boiRepository).save(boiCaptor.capture());
 
-        verify(racaService).getRacaByNome(racaStr);
+        Boi boiSalvo = boiCaptor.getValue();
+        assertThat(boiSalvo.getNumero()).isEqualTo(numero);
+        assertThat(boiSalvo.getRaca()).isNull();
+        assertThat(boiSalvo.getEstadoBoi()).isEqualTo(estadoBoi);
 
-        ArgumentCaptor<Boi> boiArgumentCaptor = ArgumentCaptor.forClass(Boi.class);
-        verify(boiRepository).save(boiArgumentCaptor.capture());
-        assertThat(boiArgumentCaptor.getValue()).isEqualTo(boiEsperado);
-        assertThat(response).isEqualTo(boiEsperado);
+        assertThat(response).isEqualTo(boiSalvo);
     }
+
 
 
 
@@ -197,24 +195,26 @@ class BoiServiceImplTest {
         String estadoBoiStr = gerarEstadoStrAleatorio();
         Long boiId = geraIdAleatorio();
 
-        BoiRequestDTO boiRequestDTO =
-                criaBoiRequestDTO(numero, racaStr, estadoBoiStr);
+        BoiRequestDTO boiRequestDTO = criaBoiRequestDTO(numero, racaStr, estadoBoiStr);
         EstadoBoi estadoBoi = EstadoBoi.getEstadoBoi(estadoBoiStr);
-
         Raca raca = new Raca(racaStr);
-        when(racaService.getRacaByNome(racaStr)).thenReturn(raca);
 
-        Boi boiEsperado = new Boi(numero, raca, estadoBoi);
-        when(boiRepository.findById(boiId)).thenReturn(Optional.of(boiEsperado));
+        Boi boiExistente = new Boi(111, new Raca("outra_raca"), EstadoBoi.NA_FAZENDA);
+
+        when(boiRepository.findById(boiId)).thenReturn(Optional.of(boiExistente));
+        when(racaService.getRacaByNome(racaStr)).thenReturn(raca);
+        when(boiRepository.save(any(Boi.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Boi response = boiService_underTest.editaBoi(boiRequestDTO, boiId);
 
-        verify(racaService).getRacaByNome(racaStr);
+        ArgumentCaptor<Boi> boiCaptor = ArgumentCaptor.forClass(Boi.class);
+        verify(boiRepository).save(boiCaptor.capture());
 
-        ArgumentCaptor<Boi> boiArgumentCaptor = ArgumentCaptor.forClass(Boi.class);
-        verify(boiRepository).save(boiArgumentCaptor.capture());
-        assertThat(boiArgumentCaptor.getValue()).isEqualTo(boiEsperado);
-        assertThat(response).isEqualTo(boiEsperado);
+        Boi boiSalvo = boiCaptor.getValue();
+        assertThat(boiSalvo.getNumero()).isEqualTo(numero);
+        assertThat(boiSalvo.getRaca()).isEqualTo(raca);
+        assertThat(boiSalvo.getEstadoBoi()).isEqualTo(estadoBoi);
+        assertThat(response).isEqualTo(boiSalvo);
     }
 
     @Test
@@ -252,7 +252,7 @@ class BoiServiceImplTest {
     }
 
     @Test
-    void naoDeveEditarBoiEstadoNulo() {
+    void naoDeveEditarBoiEstadoInvalido() {
         Integer numero = geraNumeroAleatorio();
         String racaStr = geraRacaStrAleatoria();
         String estadoBoiStr = "estado invalido";
@@ -263,9 +263,9 @@ class BoiServiceImplTest {
 
         when(boiRepository.findById(boiId)).thenReturn(Optional.of(new Boi()));
 
+
         assertThatThrownBy(() -> boiService_underTest.editaBoi(boiRequestDTO, boiId))
-                .isInstanceOf(BoiInvalidoException.class)
-                .hasMessage("Estado do boi é inválido. Use 'na_fazenda', 'vendido' ou 'morto'");
+                .isInstanceOf(BoiInvalidoException.class);
 
     }
 

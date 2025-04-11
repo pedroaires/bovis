@@ -1,9 +1,9 @@
 package bovisApp.firstApp.exception.boi;
 
-import javax.persistence.EntityExistsException;
+import bovisApp.firstApp.exception.EntidadeJaExisteException;
 
-public class BoiJaExisteException extends EntityExistsException {
-    public BoiJaExisteException(String message){
-        super(message);
+public class BoiJaExisteException extends EntidadeJaExisteException {
+    public BoiJaExisteException(Long id){
+        super("Boi", id);
     }
 }

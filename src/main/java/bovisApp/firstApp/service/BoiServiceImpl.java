@@ -1,6 +1,7 @@
 package bovisApp.firstApp.service;
 
 import bovisApp.firstApp.DTO.boi.BoiRequestDTO;
+import bovisApp.firstApp.exception.EntidadeInvalidaException;
 import bovisApp.firstApp.exception.boi.BoiInvalidoException;
 import bovisApp.firstApp.exception.boi.BoiNaoEncontradoException;
 import bovisApp.firstApp.model.Boi;
@@ -27,86 +28,85 @@ public class BoiServiceImpl implements BoiService {
 
     @Override
     public List<Boi> getBois() {
-        List<Boi> responseList = boiRepository.findAll();
-        return responseList;
+        return boiRepository.findAll();
     }
 
     @Override
     public Boi getBoiById(Long id){
-        Boi boi = boiRepository.findById(id).orElseThrow(() -> new BoiNaoEncontradoException("Boi não encontrado"));
-        return boi;
+        return boiRepository.findById(id)
+                .orElseThrow(() -> new BoiNaoEncontradoException(id));
     }
 
     @Override
-    public Boi cadastraBoi(BoiRequestDTO boiRequestDTO) throws IllegalArgumentException{
-        Integer numero = Optional.ofNullable(boiRequestDTO.getNumero()).orElseThrow(
-                () -> new BoiInvalidoException("Número do boi não pode ser nulo")
+    public Boi cadastraBoi(BoiRequestDTO dto) throws IllegalArgumentException{
+        validaBoiDTO(dto);
+        Raca raca = racaService.getRacaByNome(dto.getRaca());
+        EstadoBoi estadoBoi = parseEstadoBoi(dto.getEstadoBoi());
+        Boi boi = new Boi(
+                dto.getNumero(),
+                raca,
+                estadoBoi
         );
 
-        EstadoBoi estadoBoi;
-        try{
-            estadoBoi = EstadoBoi.getEstadoBoi(boiRequestDTO.getEstadoBoi());
-        } catch (IllegalArgumentException e){
-            throw new BoiInvalidoException("Estado do boi é inválido. Use 'na_fazenda', 'vendido' ou 'morto'");
+        return boiRepository.save(boi);
+    }
+
+    private void validaBoiDTO(BoiRequestDTO dto) {
+        if(dto == null){
+            throw new BoiInvalidoException("Boi não pode ser nulo");
         }
+        if (dto.getNumero() == null){
+            throw new BoiInvalidoException("Número do boi não pode ser nulo");
+        }
+        if(dto.getEstadoBoi() == null | dto.getEstadoBoi().isEmpty()){
+            throw new BoiInvalidoException("Estado do boi não pode ser nulo");
+        }
+    }
 
-        Raca raca = racaService.getRacaByNome(boiRequestDTO.getRaca());
-
-        Boi boi = new Boi(numero, raca, estadoBoi);
-        boiRepository.save(boi);
-        return boi;
+    private EstadoBoi parseEstadoBoi(String estado) {
+        try {
+            return EstadoBoi.getEstadoBoi(estado);
+        } catch (IllegalArgumentException e) {
+            throw new BoiInvalidoException("Estado do boi inválido. Use: 'na_fazenda', 'vendido' ou 'morto'");
+        }
     }
 
     @Override
     public List<Boi> cadastraBoisComprados(List<BoiRequestDTO> boisDTO) {
-        List<Boi> bois = boisDTO.stream().map(this::cadastraBoi).collect(Collectors.toList());
-        return bois;
+        return boisDTO.stream().map(this::cadastraBoi).collect(Collectors.toList());
     }
 
     @Override
-    public Boi editaBoi(BoiRequestDTO boiRequestDTO, Long id){
-        Boi boi = boiRepository.findById(id).orElseThrow(() -> new BoiNaoEncontradoException("Boi não encontrado"));
-        Integer numero = Optional.ofNullable(boiRequestDTO.getNumero()).orElseThrow(
-                () -> new BoiInvalidoException("Número do boi não pode ser nulo")
-        );
-        EstadoBoi estadoBoi;
-        try{
-            estadoBoi = EstadoBoi.getEstadoBoi(boiRequestDTO.getEstadoBoi());
-        } catch (IllegalArgumentException e){
-            throw new BoiInvalidoException("Estado do boi é inválido. Use 'na_fazenda', 'vendido' ou 'morto'");
-        }
-        Raca raca = racaService.getRacaByNome(boiRequestDTO.getRaca());
+    public Boi editaBoi(BoiRequestDTO dto, Long id){
+        Boi boi = getBoiById(id);
+        validaBoiDTO(dto);
 
-        boi.setNumero(numero);
+        Raca raca = racaService.getRacaByNome(dto.getRaca());
+        EstadoBoi estadoBoi = parseEstadoBoi(dto.getEstadoBoi());
+
+        boi.setNumero(dto.getNumero());
         boi.setRaca(raca);
         boi.setEstadoBoi(estadoBoi);
-        boiRepository.save(boi);
-        return boi;
+
+        return boiRepository.save(boi);
     }
 
     @Override
     public List<Boi> cadastraBoisVendidos(List<Long> boisIds){
         if(boisIds == null || boisIds.isEmpty())
-            throw new IllegalArgumentException("Ids dos bois não podem ser nulos ou estarem vazio");
+            throw new BoiInvalidoException("Ids dos bois não podem ser nulos ou estarem vazio");
 
-        List<Boi> bois = boisIds.stream().map(this::atualizaBoiVendido).collect(Collectors.toList());
-
-        return bois;
+        return boisIds.stream().map(this::atualizaBoiVendido).collect(Collectors.toList());
     }
 
-    private Boi atualizaBoiVendido(Long boiId){
-        Boi boi = boiRepository.findById(boiId).orElseThrow(
-                () -> new BoiNaoEncontradoException("Boi não encontrado")
-        );
+    private Boi atualizaBoiVendido(Long id){
+        Boi boi = getBoiById(id);
         EstadoBoi estadoBoi = boi.getEstadoBoi();
-        if (estadoBoi.equals(EstadoBoi.NA_FAZENDA)) {
-            boi.setEstadoBoi(EstadoBoi.VENDIDO);
+        if (!estadoBoi.equals(EstadoBoi.NA_FAZENDA)) {
+            throw new BoiInvalidoException("Boi só pode ser vendido se estiver NA_FAZENDA");
         }
-        else {
-            throw new IllegalArgumentException("Boi só pode ser vendido se estiver NA_FAZENDA");
-        }
-        boi = boiRepository.save(boi);
-        return boi;
+        boi.setEstadoBoi(EstadoBoi.VENDIDO);
+        return boiRepository.save(boi);
 
     }
 
@@ -114,7 +114,7 @@ public class BoiServiceImpl implements BoiService {
 
     @Override
     public Boi deleteBoi(Long id){
-        Boi boi = boiRepository.findById(id).orElseThrow(() -> new BoiNaoEncontradoException("Boi não encontrado"));
+        Boi boi = getBoiById(id);
         boiRepository.delete(boi);
         return boi;
     }
