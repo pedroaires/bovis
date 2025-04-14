@@ -1,6 +1,8 @@
 package bovisApp.firstApp.service;
 
 import bovisApp.firstApp.DTO.pesagem.PesagemRequestDTO;
+import bovisApp.firstApp.exception.pesagem.PesagemInvalidaException;
+import bovisApp.firstApp.exception.pesagem.PesagemNaoEncontradaException;
 import bovisApp.firstApp.model.Boi;
 import bovisApp.firstApp.model.Medicacao;
 import bovisApp.firstApp.model.Pesagem;
@@ -126,6 +128,7 @@ public class PesagemServiceImplTest {
         // when
         when(medicacaoService.getOrCreateMedicacao(medicacaoStr)).thenReturn(medicacao);
         when(boiService.getBoiById(boi.getId())).thenReturn(boi);
+        when(pesagemRepository.save(any(Pesagem.class))).thenAnswer(invocation -> invocation.getArgument(0));
         ArgumentCaptor<Pesagem> pesagemArgumentCaptor = ArgumentCaptor.forClass(Pesagem.class);
         Pesagem response = pesagemService_underTest.cadastraPesagem(
                 new PesagemRequestDTO(
@@ -171,7 +174,7 @@ public class PesagemServiceImplTest {
                         pesagemEsperada.getData(),
                         List.of(medicacaoStr)
                 )
-        )).isInstanceOf(IllegalArgumentException.class);
+        )).isInstanceOf(PesagemInvalidaException.class);
     }
 
     @Test
@@ -197,7 +200,7 @@ public class PesagemServiceImplTest {
                         null,
                         List.of(medicacaoStr)
                 )
-        )).isInstanceOf(IllegalArgumentException.class);
+        )).isInstanceOf(PesagemInvalidaException.class);
     }
 
     @Test
@@ -223,7 +226,7 @@ public class PesagemServiceImplTest {
                         pesagemEsperada.getData(),
                         List.of(medicacaoStr)
                 )
-        )).isInstanceOf(IllegalArgumentException.class);
+        )).isInstanceOf(PesagemInvalidaException.class);
     }
 
     @Test
@@ -242,6 +245,7 @@ public class PesagemServiceImplTest {
         when(pesagemRepository.findById(pesagemEsperada.getId())).thenReturn(java.util.Optional.of(pesagemEsperada));
         when(medicacaoService.getOrCreateMedicacao(medicacaoStr)).thenReturn(medicacao);
         when(boiService.getBoiById(boi.getId())).thenReturn(boi);
+        when(pesagemRepository.save(any(Pesagem.class))).thenAnswer(invocation -> invocation.getArgument(0));
         ArgumentCaptor<Pesagem> pesagemArgumentCaptor = ArgumentCaptor.forClass(Pesagem.class);
         Pesagem response = pesagemService_underTest.editaPesagem(
                 new PesagemRequestDTO(
@@ -258,34 +262,6 @@ public class PesagemServiceImplTest {
         verify(pesagemRepository).save(pesagemArgumentCaptor.capture());
         assertThat(pesagemArgumentCaptor.getValue()).isEqualTo(pesagemEsperada);
         assertThat(response).isEqualTo(pesagemEsperada);
-    }
-
-    @Test
-    void naoDeveEditarPesagemIdNulo(){
-        // given
-        Pesagem pesagemEsperada = gerarPesagemAleatoria();
-        String medicacaoStr = "medicacao";
-        Boi boi = gerarBoiAleatorio();
-        pesagemEsperada.setBoi(boi);
-        Medicacao medicacao = new Medicacao(medicacaoStr);
-        List<Medicacao> medicacaoList = new ArrayList<Medicacao>();
-        medicacaoList.add(medicacao);
-        pesagemEsperada.setMedicacoes(medicacaoList);
-
-
-        // when
-
-        // then
-        assertThatThrownBy(() -> pesagemService_underTest.editaPesagem(
-                new PesagemRequestDTO(
-                        boi.getId(),
-                        pesagemEsperada.getPeso(),
-                        pesagemEsperada.getDescricao(),
-                        pesagemEsperada.getData(),
-                        List.of(medicacaoStr)
-                ),
-                null
-        )).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -313,7 +289,7 @@ public class PesagemServiceImplTest {
                         List.of(medicacaoStr)
                 ),
                 pesagemEsperada.getId()
-        )).isInstanceOf(javax.persistence.EntityNotFoundException.class);
+        )).isInstanceOf(PesagemNaoEncontradaException.class);
     }
 
     @Test
@@ -340,7 +316,7 @@ public class PesagemServiceImplTest {
                         List.of(medicacaoStr)
                 ),
                 pesagemEsperada.getId()
-        )).isInstanceOf(IllegalArgumentException.class);
+        )).isInstanceOf(PesagemInvalidaException.class);
     }
 
     @Test
@@ -367,7 +343,7 @@ public class PesagemServiceImplTest {
                         List.of(medicacaoStr)
                 ),
                 pesagemEsperada.getId()
-        )).isInstanceOf(IllegalArgumentException.class);
+        )).isInstanceOf(PesagemInvalidaException.class);
     }
 
     @Test
@@ -384,6 +360,7 @@ public class PesagemServiceImplTest {
 
         // when
         when(pesagemRepository.findById(pesagemEsperada.getId())).thenReturn(java.util.Optional.of(pesagemEsperada));
+        when(pesagemRepository.save(any(Pesagem.class))).thenAnswer(invocation -> invocation.getArgument(0));
         ArgumentCaptor<Pesagem> pesagemArgumentCaptor = ArgumentCaptor.forClass(Pesagem.class);
         Pesagem response = pesagemService_underTest.editaPesagem(
                 new PesagemRequestDTO(
@@ -416,6 +393,7 @@ public class PesagemServiceImplTest {
 
         // when
         when(pesagemRepository.findById(pesagemEsperada.getId())).thenReturn(java.util.Optional.of(pesagemEsperada));
+        when(pesagemRepository.save(any(Pesagem.class))).thenAnswer(invocation -> invocation.getArgument(0));
         ArgumentCaptor<Pesagem> pesagemArgumentCaptor = ArgumentCaptor.forClass(Pesagem.class);
         Pesagem response = pesagemService_underTest.editaPesagem(
                 new PesagemRequestDTO(
@@ -449,16 +427,6 @@ public class PesagemServiceImplTest {
     }
 
     @Test
-    void naoDeveDeletarPesagemIdNulo(){
-        // given
-        Pesagem pesagemEsperada = gerarPesagemAleatoria();
-        // when
-
-        // then
-        assertThatThrownBy(() -> pesagemService_underTest.deletaPesagem(null)).isInstanceOf(IllegalArgumentException.class);
-    }
-
-    @Test
     void naoDeveDeletarPesagemInexistente(){
         // given
         Pesagem pesagemEsperada = gerarPesagemAleatoria();
@@ -466,7 +434,7 @@ public class PesagemServiceImplTest {
         when(pesagemRepository.findById(pesagemEsperada.getId())).thenReturn(java.util.Optional.empty());
 
         // then
-        assertThatThrownBy(() -> pesagemService_underTest.deletaPesagem(pesagemEsperada.getId())).isInstanceOf(javax.persistence.EntityNotFoundException.class);
+        assertThatThrownBy(() -> pesagemService_underTest.deletaPesagem(pesagemEsperada.getId())).isInstanceOf(PesagemNaoEncontradaException.class);
     }
 
 

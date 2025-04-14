@@ -1,6 +1,8 @@
 package bovisApp.firstApp.service;
 
 import bovisApp.firstApp.DTO.pesagem.PesagemRequestDTO;
+import bovisApp.firstApp.exception.pesagem.PesagemInvalidaException;
+import bovisApp.firstApp.exception.pesagem.PesagemNaoEncontradaException;
 import bovisApp.firstApp.model.Boi;
 import bovisApp.firstApp.model.Medicacao;
 import bovisApp.firstApp.model.Pesagem;
@@ -8,8 +10,7 @@ import bovisApp.firstApp.repository.PesagemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityNotFoundException;
-import java.util.Date;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -18,9 +19,9 @@ import java.util.stream.Collectors;
 public class PesagemServiceImpl implements PesagemService{
     private final PesagemRepository pesagemRepository;
 
-    private BoiService boiService;
+    private final BoiService boiService;
 
-    private MedicacaoService medicacaoService;
+    private final MedicacaoService medicacaoService;
 
     @Autowired
     public PesagemServiceImpl(PesagemRepository pesagemRepository, BoiService boiService, MedicacaoService medicacaoService) {
@@ -28,62 +29,82 @@ public class PesagemServiceImpl implements PesagemService{
         this.boiService = boiService;
         this.medicacaoService = medicacaoService;
     }
+    @Override
+    public Pesagem getPesagemById(Long id){
+
+        return pesagemRepository.findById(id).orElseThrow(
+                () -> new PesagemNaoEncontradaException(id)
+        );
+    }
 
     @Override
     public List<Pesagem> getPesagens(){
-        List<Pesagem> responseList = pesagemRepository.findAll();
-        return responseList;
+        return pesagemRepository.findAll();
     }
+
 
     @Override
     public List<Pesagem> getPesagemByBoiId(Long boiId){
-        List<Pesagem> pesagem = pesagemRepository.findByBoiId(boiId);
-        return pesagem;
+        return pesagemRepository.findByBoiId((boiId));
     }
 
     @Override
-    public Pesagem cadastraPesagem(PesagemRequestDTO pesagemRequestDTO) {
-        Double peso = Optional.ofNullable(pesagemRequestDTO.getPeso()).orElseThrow(() -> new IllegalArgumentException("Peso não pode ser nulo"));
-        Date data = Optional.ofNullable(pesagemRequestDTO.getData()).orElseThrow(() -> new IllegalArgumentException("Data da pesagem não pode ser nula"));
-        String descricao = Optional.ofNullable(pesagemRequestDTO.getDescricao()).orElse("");
-        Long boiId = Optional.ofNullable(pesagemRequestDTO.getBoiId()).orElseThrow(() -> new IllegalArgumentException("Id do boi não pode ser nulo"));
-        List<String> medicacoesStr = Optional.ofNullable(pesagemRequestDTO.getMedicacoes()).orElse(null);
-        List<Medicacao> medicacoes = medicacoesStr.stream().map(medicacaoService::getOrCreateMedicacao).collect(Collectors.toList());
+    public Pesagem cadastraPesagem(PesagemRequestDTO dto) {
+        validaPesagemDTO(dto);
 
-        Boi boi = boiService.getBoiById(boiId);
-        Pesagem pesagem = new Pesagem(boi, data, peso, descricao, medicacoes);
-        pesagemRepository.save(pesagem);
-        return pesagem;
+        String descricao = Optional.ofNullable(dto.getDescricao()).orElse("");
+        List<String> medicacoesStr = Optional.ofNullable(dto.getMedicacoes()).orElse(Collections.emptyList());
+        List<Medicacao> medicacoes = medicacoesStr.stream()
+                .map(medicacaoService::getOrCreateMedicacao)
+                .collect(Collectors.toList());
+
+        Boi boi = boiService.getBoiById(dto.getBoiId());
+
+        Pesagem pesagem = new Pesagem(
+                boi,
+                dto.getData(),
+                dto.getPeso(),
+                descricao,
+                medicacoes
+        );
+
+        return pesagemRepository.save(pesagem);
     }
     @Override
-    public Pesagem editaPesagem(PesagemRequestDTO pesagemRequestDTO, Long pesagemId) {
-        if (pesagemId == null) {
-            throw new IllegalArgumentException("Id da pesagem não pode ser nulo");
-        }
-        Pesagem pesagem = pesagemRepository.findById(pesagemId).orElseThrow(() -> new EntityNotFoundException("Pesagem não encontrada"));
-        Double peso = Optional.ofNullable(pesagemRequestDTO.getPeso()).orElseThrow(() -> new IllegalArgumentException("Peso não pode ser nulo"));
-        Date data = Optional.ofNullable(pesagemRequestDTO.getData()).orElseThrow(() -> new IllegalArgumentException("Data da pesagem não pode ser nula"));
-        String descricao = Optional.ofNullable(pesagemRequestDTO.getDescricao()).orElse("");
-        Long boiId = Optional.ofNullable(pesagemRequestDTO.getBoiId()).orElseThrow(() -> new IllegalArgumentException("Id do boi não pode ser nulo"));
-        List<String> medicacoesStr = Optional.ofNullable(pesagemRequestDTO.getMedicacoes()).orElse(null);
+    public Pesagem editaPesagem(PesagemRequestDTO dto, Long pesagemId) {
+        Pesagem pesagem = getPesagemById(pesagemId);
+        validaPesagemDTO(dto);
+        String descricao = Optional.ofNullable(dto.getDescricao()).orElse("");
+        List<String> medicacoesStr = Optional.ofNullable(dto.getMedicacoes()).orElse(Collections.emptyList());
         List<Medicacao> medicacoes = medicacoesStr.stream().map(medicacaoService::getOrCreateMedicacao).collect(Collectors.toList());
 
-        Boi boi = boiService.getBoiById(boiId);
-        pesagem.setData(data);
-        pesagem.setPeso(peso);
+        Boi boi = boiService.getBoiById(dto.getBoiId());
+        pesagem.setData(dto.getData());
+        pesagem.setPeso(dto.getPeso());
         pesagem.setDescricao(descricao);
         pesagem.setMedicacoes(medicacoes);
         pesagem.setBoi(boi);
-        pesagemRepository.save(pesagem);
-        return pesagem;
+        return pesagemRepository.save(pesagem);
+    }
+
+    private void validaPesagemDTO(PesagemRequestDTO dto){
+        if (dto == null){
+            throw new PesagemInvalidaException("Pesagem não pode ser nula");
+        }
+        if (dto.getPeso() == null){
+            throw new PesagemInvalidaException("Peso da pesagem não pode ser nulo");
+        }
+        if(dto.getData() == null){
+            throw new PesagemInvalidaException("Data da pesagem não pode ser nula");
+        }
+        if (dto.getBoiId() == null){
+            throw new PesagemInvalidaException("Id do boi não pode ser nulo");
+        }
     }
 
     @Override
     public Pesagem deletaPesagem(Long id) {
-        if (id == null) {
-            throw new IllegalArgumentException("Id da pesagem não pode ser nulo");
-        }
-        Pesagem pesagem = pesagemRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Pesagem não encontrada"));
+        Pesagem pesagem = getPesagemById(id);
         pesagemRepository.delete(pesagem);
         return pesagem;
     }
