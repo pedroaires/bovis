@@ -1,7 +1,6 @@
 package bovisApp.firstApp.service;
 
 import bovisApp.firstApp.DTO.boi.BoiRequestDTO;
-import bovisApp.firstApp.exception.EntidadeInvalidaException;
 import bovisApp.firstApp.exception.boi.BoiInvalidoException;
 import bovisApp.firstApp.exception.boi.BoiNaoEncontradoException;
 import bovisApp.firstApp.model.Boi;
@@ -12,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service

@@ -20,7 +20,8 @@ public class RacaServiceImpl implements RacaService{
     @Override
     public String normalizaRaca(String racaStr){
         if(racaStr == null || racaStr.isEmpty()) {
-            throw new IllegalArgumentException("Raca do boi nao pode ser vazia");
+
+            return "desconhecida";
         }
         String strNorm = racaStr.toLowerCase().trim();
         return strNorm;
