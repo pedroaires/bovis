@@ -20,25 +20,21 @@ public class Transacao {
     private ModeloTransacao modeloTransacao;
     private TransacaoOperacao operacao;
 
-    @ManyToMany
-    @JoinTable(
-            name = "transacao_boi",
-            joinColumns = @JoinColumn(name = "transacao_id"),
-            inverseJoinColumns = @JoinColumn(name = "boid_id")
-    )
-    private List<Boi> bois;
+    @OneToMany(mappedBy = "transacao", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<TransacaoBoi> transacaoBois;
+
     private String contraParte;
 
     @OneToOne
     private Transacao transacaoRelacionada;
 
-    public Transacao(BigDecimal valor, LocalDate data, String descricao, ModeloTransacao modeloTransacao, TransacaoOperacao operacao, List<Boi> bois, String contraParte, Transacao transacaoRelacionada) {
+    public Transacao(BigDecimal valor, LocalDate data, String descricao, ModeloTransacao modeloTransacao, TransacaoOperacao operacao, List<TransacaoBoi> transacaoBois, String contraParte, Transacao transacaoRelacionada) {
         this.valor = valor;
         this.data = data;
         this.descricao = descricao;
         this.modeloTransacao = modeloTransacao;
         this.operacao = operacao;
-        this.bois = bois;
+        this.transacaoBois = transacaoBois;
         this.contraParte = contraParte;
         this.transacaoRelacionada = transacaoRelacionada;
     }
@@ -95,12 +91,12 @@ public class Transacao {
         this.operacao = operacao;
     }
 
-    public List<Boi> getBois() {
-        return bois;
+    public List<TransacaoBoi> getTransacaoBois() {
+        return transacaoBois;
     }
 
-    public void setBois(List<Boi> bois) {
-        this.bois = bois;
+    public void setTransacaoBois(List<TransacaoBoi> transacaoBois) {
+        this.transacaoBois = transacaoBois;
     }
 
     public String getContraParte() {
