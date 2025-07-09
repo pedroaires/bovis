@@ -4,6 +4,7 @@ import bovisApp.firstApp.model.enumeration.EstadoBoi;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -18,12 +19,10 @@ public class Boi {
     private Map<Date, Pesagem> pesagens;
     @OneToOne
     private Raca raca;
-    @ManyToOne
-    @JoinColumn(name = "compra_id")
-    private Transacao compra;
-    @ManyToOne
-    @JoinColumn(name = "venda_id")
-    private Transacao venda;
+
+    @OneToMany(mappedBy = "boi", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<TransacaoBoi> transacaoBois;
+
     private EstadoBoi estadoBoi;
 
     public Boi(int numero, String raca){ }
@@ -78,6 +77,14 @@ public class Boi {
 
     public void setEstadoBoi(EstadoBoi estadoBoi) {
         this.estadoBoi = estadoBoi;
+    }
+
+    public List<TransacaoBoi> getTransacaoBois() {
+        return transacaoBois;
+    }
+
+    public void setTransacaoBois(List<TransacaoBoi> transacaoBois) {
+        this.transacaoBois = transacaoBois;
     }
 
     @Override
