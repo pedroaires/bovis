@@ -76,8 +76,8 @@ public class TransacaoServiceImpl implements TransacaoService{
             transacaoBoi.setBoi(boi);
             transacaoBoi.setPeso(dto.getPesoNaTransacao());
             transacaoBoi.setValor(dto.getValor());
-            //TODO: Atualizar o boi com nova transacao aqui
-            // apenas adicionar a nova transacao ao boi
+
+            boi.getTransacaoBois().add(transacaoBoi);
 
             transacaoBois.add(transacaoBoi);
         }
@@ -95,8 +95,8 @@ public class TransacaoServiceImpl implements TransacaoService{
             transacaoBoi.setBoi(boi);
             transacaoBoi.setPeso(dto.getPesoNaTransacao());
             transacaoBoi.setValor(dto.getValor());
-            //TODO: Atualizar o boi com nova transacao aqui
-            // apenas adicionar a nova transacao ao boi
+
+            boi.getTransacaoBois().add(transacaoBoi);
 
             transacaoBois.add(transacaoBoi);
         }
