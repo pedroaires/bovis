@@ -5,7 +5,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 public class VendaRequestDTO extends TransacaoRequestDTO{
-    private List<Long> boisIds;
+    private List<VendaBoiDTO> vendaBoiDTOS;
 
     public VendaRequestDTO(BigDecimal valor, LocalDate data, String descricao, String modeloTransacao, String contraParte) {
         super(valor, data, descricao, modeloTransacao, contraParte);
@@ -15,12 +15,11 @@ public class VendaRequestDTO extends TransacaoRequestDTO{
 
     }
 
-
-    public List<Long> getBoisIds() {
-        return boisIds;
+    public List<VendaBoiDTO> getVendaBoiDTOS() {
+        return vendaBoiDTOS;
     }
 
-    public void setBoisIds(List<Long> boisIds) {
-        this.boisIds = boisIds;
+    public void setVendaBoiDTOS(List<VendaBoiDTO> vendaBoiDTOS) {
+        this.vendaBoiDTOS = vendaBoiDTOS;
     }
 }
