@@ -1,29 +1,40 @@
 package bovisApp.firstApp.service;
 
-import bovisApp.firstApp.DTO.transacao.CompraRequestDTO;
-import bovisApp.firstApp.DTO.transacao.TransacaoRequestDTO;
-import bovisApp.firstApp.DTO.transacao.VendaRequestDTO;
+import bovisApp.firstApp.DTO.boi.BoiRequestDTO;
+import bovisApp.firstApp.DTO.transacao.*;
 import bovisApp.firstApp.exception.transacao.TransacaoInvalidaException;
 import bovisApp.firstApp.exception.transacao.TransacaoNaoEncontradaException;
 import bovisApp.firstApp.model.Boi;
 import bovisApp.firstApp.model.Transacao;
+import bovisApp.firstApp.model.TransacaoBoi;
 import bovisApp.firstApp.model.enumeration.ModeloTransacao;
 import bovisApp.firstApp.model.enumeration.TransacaoOperacao;
+import bovisApp.firstApp.repository.TransacaoBoiRepository;
 import bovisApp.firstApp.repository.TransacaoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class TransacaoServiceImpl implements TransacaoService{
 
     private final TransacaoRepository transacaoRepository;
+
+    private final TransacaoBoiRepository transacaoBoiRepository;
     private final BoiService boiService;
 
     @Autowired
-    public TransacaoServiceImpl(TransacaoRepository transacaoRepository, BoiService boiService){
+    public TransacaoServiceImpl(
+            TransacaoRepository transacaoRepository,
+            TransacaoBoiRepository transacaoBoiRepository,
+            BoiService boiService
+    ){
         this.transacaoRepository = transacaoRepository;
+        this.transacaoBoiRepository = transacaoBoiRepository;
         this.boiService = boiService;
     }
     @Override
@@ -41,17 +52,43 @@ public class TransacaoServiceImpl implements TransacaoService{
     }
 
     @Override
+    @Transactional
     public Transacao cadastraCompra(CompraRequestDTO compraRequestDTO) {
         validaTransacaoDTO(compraRequestDTO);
-        List<Boi> boisComprados = boiService.cadastraBoisComprados(compraRequestDTO.getBois());
+        List<BoiRequestDTO> boisRequestDTOS = compraRequestDTO.getCompraBoiDTOS()
+                .stream().map(CompraBoiDTO::getBoiRequestDTO)
+                .collect(Collectors.toList());
+        List<Boi> boisComprados = boiService.cadastraBoisComprados(boisRequestDTOS);
+        List<TransacaoBoi> transacaoBois = criaTransacoesBois(boisComprados, compraRequestDTO.getCompraBoiDTOS())
+       return criarTransacao(compraRequestDTO, transacaoBois, TransacaoOperacao.COMPRA);
+    }
 
-       return criarTransacao(compraRequestDTO, boisComprados, TransacaoOperacao.COMPRA);
+    private List<TransacaoBoi> criaTransacoesBois(List<Boi> boisComprados, List<CompraBoiDTO> compraBoiDTOS){
+        //TODO:
+        // 1. Adicionar verificações como tamanho de boisComprados = compraBoiDTOS
+        // 2. Adicionar validacoes de transacaoBoi (Pesos positivos maiores que 0, valores positivos maiores que 0)
+        List<TransacaoBoi> transacaoBois = new ArrayList<>();
+        for (int i = 0 ; i < compraBoiDTOS.size() ; i ++){
+            CompraBoiDTO dto = compraBoiDTOS.get(i);
+            Boi boi = boisComprados.get(i);
+            TransacaoBoi transacaoBoi = new TransacaoBoi();
+
+            transacaoBoi.setBoi(boi);
+            transacaoBoi.setPeso(dto.getPesoNaTransacao());
+            transacaoBoi.setValor(dto.getValor());
+            //TODO: Atualizar o boi com nova transacao aqui
+            // apenas adicionar a nova transacao ao boi
+
+            transacaoBois.add(transacaoBoi);
+        }
+        return transacaoBois;
     }
 
     @Override
     public Transacao cadastraVenda(VendaRequestDTO vendaRequestDTO) {
         this.validaTransacaoDTO(vendaRequestDTO);
         List<Boi> boisVendidos = boiService.cadastraBoisVendidos(vendaRequestDTO.getBoisIds());
+
 
         return criarTransacao(vendaRequestDTO, boisVendidos, TransacaoOperacao.VENDA);
     }
@@ -65,9 +102,10 @@ public class TransacaoServiceImpl implements TransacaoService{
         return transacao;
     }
 
+
     private Transacao criarTransacao(
             TransacaoRequestDTO dto,
-            List<Boi> bois,
+            List<TransacaoBoi> transacaoBois,
             TransacaoOperacao operacao
     ) {
         validaTransacaoDTO(dto);
@@ -77,7 +115,7 @@ public class TransacaoServiceImpl implements TransacaoService{
         transacao.setDescricao(dto.getDescricao());
         transacao.setModeloTransacao(ModeloTransacao.valueOf(dto.getModeloTransacao()));
         transacao.setContraParte(dto.getContraParte());
-        transacao.setBois(bois);
+        transacao.setTransacaoBois(transacaoBois);
         transacao.setOperacao(operacao);
         return transacaoRepository.save(transacao);
     }
