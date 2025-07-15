@@ -162,5 +162,6 @@ buildNumber.properties
 
 # Ignora o script de popular o banco de dados
 **/data.sql
+**/afterdata.sql
 
 # End of https://www.toptal.com/developers/gitignore/api/java,maven,intellij
