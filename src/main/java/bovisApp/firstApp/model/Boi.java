@@ -12,17 +12,20 @@ import java.util.Objects;
 @Table
 public class Boi {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "boi_seq_gen")
+    @SequenceGenerator(name = "boi_seq_gen", sequenceName = "boi_id_seq", allocationSize = 1)
     private Long id;
     private Integer numero;
     @OneToMany
     private Map<Date, Pesagem> pesagens;
-    @OneToOne
+    @ManyToOne
+    @JoinColumn(name = "raca_id", nullable = false)
     private Raca raca;
-
     @OneToMany(mappedBy = "boi", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TransacaoBoi> transacaoBois;
 
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private EstadoBoi estadoBoi;
 
     public Boi(int numero, String raca){ }

@@ -7,7 +7,8 @@ import java.math.BigDecimal;
 @Entity
 public class TransacaoBoi {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "transacaoboi_seq_gen")
+    @SequenceGenerator(name = "transacaoboi_seq_gen", sequenceName = "transacao_boi_id_seq", allocationSize = 1)
     private Long id;
 
     @ManyToOne

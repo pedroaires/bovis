@@ -8,7 +8,8 @@ import java.util.Objects;
 @Entity
 public class Pesagem {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "pesagem_seq_gen")
+    @SequenceGenerator(name = "pesagem_seq_gen", sequenceName = "pesagem_id_seq", allocationSize = 1)
     private Long id;
 
     private Date data;

@@ -12,7 +12,8 @@ import java.util.List;
 @Entity
 public class Transacao {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "transacao_seq_gen")
+    @SequenceGenerator(name = "transacao_seq_gen", sequenceName = "transacao_id_seq", allocationSize = 1)
     private Long id;
     private BigDecimal valor;
     private LocalDate data;

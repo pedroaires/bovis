@@ -1,15 +1,14 @@
 package bovisApp.firstApp.model;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.util.Objects;
 
 @Entity
 public class Raca {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "raca_seq_gen")
+    @SequenceGenerator(name = "raca_seq_gen", sequenceName = "raca_id_seq", allocationSize = 1)
     private Long id;
     private String nome;
 
