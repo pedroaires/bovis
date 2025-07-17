@@ -1,12 +1,17 @@
 package bovisApp.firstApp.service;
 
+import bovisApp.firstApp.DTO.boi.BoiRequestDTO;
+import bovisApp.firstApp.DTO.transacao.CompraBoiDTO;
 import bovisApp.firstApp.DTO.transacao.CompraRequestDTO;
+import bovisApp.firstApp.DTO.transacao.VendaBoiDTO;
 import bovisApp.firstApp.DTO.transacao.VendaRequestDTO;
 import bovisApp.firstApp.exception.transacao.TransacaoInvalidaException;
+import bovisApp.firstApp.exception.transacao.TransacaoNaoEncontradaException;
 import bovisApp.firstApp.model.Boi;
 import bovisApp.firstApp.model.Transacao;
 import bovisApp.firstApp.model.enumeration.ModeloTransacao;
 import bovisApp.firstApp.model.enumeration.TransacaoOperacao;
+import bovisApp.firstApp.repository.TransacaoBoiRepository;
 import bovisApp.firstApp.repository.TransacaoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,6 +24,7 @@ import javax.persistence.EntityNotFoundException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
@@ -33,17 +39,37 @@ public class TransacaoServiceImplTest {
     private TransacaoRepository transacaoRepository;
 
     @Mock
+    private TransacaoBoiRepository transacaoBoiRepository;
+
+    @Mock
     private BoiService boiService;
 
     @BeforeEach
     void setUp() {
-        transacaoService_underTest = new TransacaoServiceImpl(transacaoRepository, boiService);
+        transacaoService_underTest = new TransacaoServiceImpl(transacaoRepository, transacaoBoiRepository, boiService);
     }
 
     private Boi gerarBoiAleatorio() {
         Boi boi = new Boi();
         boi.setId((long) (Math.random() * 1000));
+        boi.setTransacaoBois(new ArrayList<>());
         return boi;
+    }
+    private CompraBoiDTO gerarCompraBoiDTO(){
+
+        CompraBoiDTO compraBoiDTO = new CompraBoiDTO();
+        BoiRequestDTO boiRequestDTO = new BoiRequestDTO();
+        compraBoiDTO.setBoiRequestDTO(boiRequestDTO);
+        compraBoiDTO.setPesoNaTransacao(Double.valueOf(500));
+        compraBoiDTO.setValor(BigDecimal.TEN);
+        return compraBoiDTO;
+    }
+    private VendaBoiDTO gerarVendaBoiDTO(Long boiId) {
+        VendaBoiDTO vendaBoiDTO = new VendaBoiDTO();
+        vendaBoiDTO.setBoiId(boiId);
+        vendaBoiDTO.setPesoNaTransacao(Double.valueOf(450));
+        vendaBoiDTO.setValor(BigDecimal.valueOf(750));
+        return vendaBoiDTO;
     }
 
     private CompraRequestDTO gerarCompraRequest() {
@@ -53,7 +79,8 @@ public class TransacaoServiceImplTest {
         dto.setDescricao("Compra de bois");
         dto.setModeloTransacao(ModeloTransacao.UNIDADE.name());
         dto.setContraParte("Fazenda Exemplo");
-        dto.setBois(Collections.emptyList());
+        CompraBoiDTO compraBoiDTO = gerarCompraBoiDTO();
+        dto.setCompraBoiDTOS(List.of(compraBoiDTO));
         return dto;
     }
 
@@ -64,7 +91,12 @@ public class TransacaoServiceImplTest {
         dto.setDescricao("Venda de bois");
         dto.setModeloTransacao(ModeloTransacao.PESO.name());
         dto.setContraParte("Frigorífico XYZ");
-        dto.setBoisIds(boiIds);
+
+        List<VendaBoiDTO> vendaBoiDTOS = boiIds.stream()
+                .map(this::gerarVendaBoiDTO)
+                .collect(Collectors.toList());
+
+        dto.setVendaBoiDTOS(vendaBoiDTOS);
         return dto;
     }
 
@@ -73,12 +105,23 @@ public class TransacaoServiceImplTest {
         // given
         CompraRequestDTO dto = gerarCompraRequest();
         List<Boi> bois = List.of(gerarBoiAleatorio());
-        when(boiService.cadastraBoisComprados(dto.getBois())).thenReturn(bois);
+        List<BoiRequestDTO> expectedBoiRequests = dto.getCompraBoiDTOS()
+                .stream()
+                .map(CompraBoiDTO::getBoiRequestDTO)
+                .collect(Collectors.toList());
+
+        ArgumentCaptor<List<BoiRequestDTO>> boiRequestCaptor = ArgumentCaptor.forClass(List.class);
+        when(boiService.cadastraBoisComprados(boiRequestCaptor.capture())).thenReturn(bois);
 
         // when
         transacaoService_underTest.cadastraCompra(dto);
 
         // then
+            // Verifica se a lista correta foi passada para o boiService
+        List<BoiRequestDTO> capturedBoiRequests = boiRequestCaptor.getValue();
+        assertThat(capturedBoiRequests).isEqualTo(expectedBoiRequests);
+
+            // Verifica se a transação foi salva corretamente
         ArgumentCaptor<Transacao> captor = ArgumentCaptor.forClass(Transacao.class);
         verify(transacaoRepository).save(captor.capture());
 
@@ -86,6 +129,8 @@ public class TransacaoServiceImplTest {
         assertThat(saved.getValor()).isEqualTo(dto.getValor());
         assertThat(saved.getOperacao()).isEqualTo(TransacaoOperacao.COMPRA);
         assertThat(saved.getContraParte()).isEqualTo(dto.getContraParte());
+        assertThat(saved.getTransacaoBois()).isNotNull();
+        assertThat(saved.getTransacaoBois().size()).isEqualTo(bois.size());
     }
 
     @Test
@@ -94,18 +139,32 @@ public class TransacaoServiceImplTest {
         List<Long> boiIds = List.of(1L, 2L);
         VendaRequestDTO dto = gerarVendaRequest(boiIds);
         List<Boi> bois = List.of(gerarBoiAleatorio(), gerarBoiAleatorio());
-        when(boiService.cadastraBoisVendidos(boiIds)).thenReturn(bois);
+
+        List<Long> expectedBoiIds = dto.getVendaBoiDTOS()
+                .stream()
+                .map(VendaBoiDTO::getBoiId)
+                .collect(Collectors.toList());
+
+        ArgumentCaptor<List<Long>> boiIdsCaptor = ArgumentCaptor.forClass(List.class);
+        when(boiService.cadastraBoisVendidos(boiIdsCaptor.capture())).thenReturn(bois);
 
         // when
         transacaoService_underTest.cadastraVenda(dto);
 
         // then
+            // Verifica se a lista correta foi passada para o boiService
+        List<Long> capturedBoiIds = boiIdsCaptor.getValue();
+        assertThat(capturedBoiIds).isEqualTo(expectedBoiIds);
+
+            // Verifica se a transação foi salva corretamente
         ArgumentCaptor<Transacao> captor = ArgumentCaptor.forClass(Transacao.class);
         verify(transacaoRepository).save(captor.capture());
 
         Transacao saved = captor.getValue();
         assertThat(saved.getOperacao()).isEqualTo(TransacaoOperacao.VENDA);
         assertThat(saved.getValor()).isEqualTo(dto.getValor());
+        assertThat(saved.getTransacaoBois()).isNotNull();
+        assertThat(saved.getTransacaoBois().size()).isEqualTo(bois.size());
     }
 
     @Test
@@ -137,7 +196,7 @@ public class TransacaoServiceImplTest {
         mock.setId(1L);
         when(transacaoRepository.findById(1L)).thenReturn(Optional.of(mock));
 
-        Transacao result = transacaoService_underTest.getLoteById(1L);
+        Transacao result = transacaoService_underTest.getTransacaoById(1L);
 
         assertThat(result).isEqualTo(mock);
         verify(transacaoRepository).findById(1L);
@@ -147,7 +206,7 @@ public class TransacaoServiceImplTest {
     void deveLancarExcecaoSeTransacaoNaoEncontradaPorId() {
         when(transacaoRepository.findById(1L)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> transacaoService_underTest.getLoteById(1L))
-                .isInstanceOf(EntityNotFoundException.class);
+        assertThatThrownBy(() -> transacaoService_underTest.getTransacaoById(1L))
+                .isInstanceOf(TransacaoNaoEncontradaException.class);
     }
 }

@@ -28,9 +28,6 @@ public class Boi {
     @Enumerated(EnumType.STRING)
     private EstadoBoi estadoBoi;
 
-    public Boi(int numero, String raca){ }
-
-
     public Boi(int numero, Raca raca, EstadoBoi estadoBoi) {
         this.numero = numero;
         this.raca = raca;

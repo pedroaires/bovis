@@ -44,7 +44,7 @@ public class TransacaoServiceImpl implements TransacaoService{
     }
 
     @Override
-    public Transacao getLoteById(Long id) {
+    public Transacao getTransacaoById(Long id) {
         Transacao transacao = transacaoRepository.findById(id).orElseThrow(
                 () -> new TransacaoNaoEncontradaException(id)
         );

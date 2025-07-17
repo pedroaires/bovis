@@ -8,7 +8,7 @@ import java.util.List;
 public interface TransacaoService {
     List<Transacao> getTransacoes();
 
-    Transacao getLoteById(Long id);
+    Transacao getTransacaoById(Long id);
 
     Transacao cadastraCompra(CompraRequestDTO compraRequestDTO);
 

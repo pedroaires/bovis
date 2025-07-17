@@ -31,7 +31,7 @@ public class TransacaoAPIController {
     @GetMapping(value = "/getTransacaoById")
     @ResponseStatus(HttpStatus.OK)
     public TransacaoResponseDTO getTransacaoById(@RequestParam Long id){
-        TransacaoResponseDTO response = new TransacaoResponseDTO(transacaoService.getLoteById(id));
+        TransacaoResponseDTO response = new TransacaoResponseDTO(transacaoService.getTransacaoById(id));
         return response;
     }
 
