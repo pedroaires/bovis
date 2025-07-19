@@ -1,8 +1,12 @@
 package bovisApp.firstApp.controller;
 
+import bovisApp.firstApp.DTO.boi.BoiFilterRequestDTO;
 import bovisApp.firstApp.DTO.boi.BoiRequestDTO;
 import bovisApp.firstApp.DTO.boi.BoiResponseDTO;
+import bovisApp.firstApp.model.Boi;
 import bovisApp.firstApp.service.BoiService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -54,6 +58,16 @@ public class BoiAPIController {
     public BoiResponseDTO deletaBoi(@RequestParam Long id){
         BoiResponseDTO response = new BoiResponseDTO(boiService.deleteBoi(id));
         return response;
+    }
+
+    @GetMapping(value = "/searchBois")
+    @ResponseStatus(HttpStatus.OK)
+    public Page<BoiResponseDTO> searchBois(
+            @ModelAttribute BoiFilterRequestDTO filterDTO,
+            Pageable pageable
+    ){
+        Page<Boi> boiPage = boiService.searchBois(filterDTO, pageable);
+        return boiPage.map(BoiResponseDTO::new);
     }
 
 }

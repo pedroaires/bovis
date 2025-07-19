@@ -3,9 +3,7 @@ package bovisApp.firstApp.model;
 import bovisApp.firstApp.model.enumeration.EstadoBoi;
 
 import javax.persistence.*;
-import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 @Entity
@@ -17,7 +15,7 @@ public class Boi {
     private Long id;
     private Integer numero;
     @OneToMany
-    private Map<Date, Pesagem> pesagens;
+    private List<Pesagem> pesagens;
     @ManyToOne
     @JoinColumn(name = "raca_id", nullable = false)
     private Raca raca;
@@ -62,11 +60,11 @@ public class Boi {
         this.raca = raca;
     }
 
-    public Map<Date, Pesagem> getPesagens() {
+    public List<Pesagem> getPesagens() {
         return pesagens;
     }
 
-    public void setPesagens(Map<Date, Pesagem> pesagens) {
+    public void setPesagens(List<Pesagem> pesagens) {
         this.pesagens = pesagens;
     }
 

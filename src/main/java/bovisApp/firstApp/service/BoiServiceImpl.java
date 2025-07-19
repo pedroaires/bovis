@@ -1,13 +1,19 @@
 package bovisApp.firstApp.service;
 
+import bovisApp.firstApp.DTO.boi.BoiFilterRequestDTO;
 import bovisApp.firstApp.DTO.boi.BoiRequestDTO;
 import bovisApp.firstApp.exception.boi.BoiInvalidoException;
 import bovisApp.firstApp.exception.boi.BoiNaoEncontradoException;
 import bovisApp.firstApp.model.Boi;
 import bovisApp.firstApp.model.Raca;
 import bovisApp.firstApp.model.enumeration.EstadoBoi;
+import bovisApp.firstApp.model.enumeration.TransacaoOperacao;
 import bovisApp.firstApp.repository.BoiRepository;
+import bovisApp.firstApp.specification.BoiSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -115,6 +121,41 @@ public class BoiServiceImpl implements BoiService {
         Boi boi = getBoiById(id);
         boiRepository.delete(boi);
         return boi;
+    }
+
+    @Override
+    public Page<Boi> searchBois(BoiFilterRequestDTO filterDTO, Pageable pageable) {
+        Specification<Boi> spec = Specification.where(null);
+
+        if (filterDTO.getRacaId() != null){
+            spec = spec.and(BoiSpecification.hasRaca(filterDTO.getRacaId()));
+        }
+        if (filterDTO.getNumeroBoi() != null){
+            spec = spec.and(BoiSpecification.hasNumero(filterDTO.getNumeroBoi()));
+        }
+        if (filterDTO.getEstadoBoi() != null){
+            EstadoBoi estadoBoi = parseEstadoBoi(filterDTO.getEstadoBoi());
+            spec = spec.and(BoiSpecification.hasEstado(estadoBoi));
+        }
+        if(filterDTO.getPesoMin() != null || filterDTO.getPesoMax() != null){
+            spec = spec.and(BoiSpecification.hasPesagemBetween(
+                    filterDTO.getPesoMin(), filterDTO.getPesoMax()
+            ));
+        }
+        if (filterDTO.getDataPesagemInicio() != null || filterDTO.getDataPesagemFim() != null){
+            spec = spec.and(BoiSpecification.hasPesagemDateBetween(
+                    filterDTO.getDataPesagemInicio(),
+                    filterDTO.getDataPesagemFim()
+            ));
+        }
+        if (filterDTO.getDataCompraInicio() != null || filterDTO.getDataCompraFim() != null){
+            spec = spec.and(BoiSpecification.hasTransacaoDataBetween(
+                    filterDTO.getDataCompraInicio(),
+                    filterDTO.getDataCompraFim(),
+                    TransacaoOperacao.COMPRA
+            ));
+        }
+        return boiRepository.findAll(spec, pageable);
     }
 
 
