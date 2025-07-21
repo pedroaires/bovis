@@ -20,7 +20,7 @@ public class BoiSpecification {
                 return criteriaBuilder.isTrue(criteriaBuilder.literal(true));
             }
             else{
-                return criteriaBuilder.equal(root.get("raca").get("id"), racaId);
+                return criteriaBuilder.equal(root.get("racas").get("id"), racaId);
             }
         };
     }
@@ -97,8 +97,8 @@ public class BoiSpecification {
             if (dataInicio == null && dataFim == null){
                 return criteriaBuilder.isTrue(criteriaBuilder.literal(true));
             }
-            Join<Boi, TransacaoBoi> transacaoBoiJoin = root.join("transacaoBois", JoinType.INNER);
-            Join<TransacaoBoi, Transacao> transacaoJoin = root.join("transacao", JoinType.INNER);
+            Join<Boi, TransacaoBoi> transacaoBoiJoin = root.join("transacoes_bois", JoinType.INNER);
+            Join<TransacaoBoi, Transacao> transacaoJoin = transacaoBoiJoin.join("transacoes", JoinType.INNER);
             Predicate predicate = criteriaBuilder.isTrue(criteriaBuilder.literal((true)));
             if(dataInicio != null){
                 predicate = criteriaBuilder.and(
@@ -121,4 +121,14 @@ public class BoiSpecification {
             return predicate;
         };
     }
+
+    public static Specification<Boi> fetchPesagens(){
+        return (root, query, criteriaBuilder) -> {
+            if (query.getResultType() != Long.class) {
+                root.fetch("pesagens", JoinType.LEFT);
+            }
+            return criteriaBuilder.isTrue(criteriaBuilder.literal(true));
+        };
+    }
+
 }

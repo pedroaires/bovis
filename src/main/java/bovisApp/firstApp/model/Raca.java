@@ -4,6 +4,7 @@ import javax.persistence.*;
 import java.util.Objects;
 
 @Entity
+@Table(name = "racas")
 public class Raca {
 
     @Id
@@ -32,6 +33,10 @@ public class Raca {
         return id;
     }
 
+    @Override
+    public String toString(){
+        return this.nome;
+    }
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

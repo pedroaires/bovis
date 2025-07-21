@@ -27,4 +27,8 @@ public interface BoiService {
     Boi deleteBoi(Long id);
 
     Page<Boi> searchBois(BoiFilterRequestDTO filterDTO, Pageable pageable);
+
+
+
+    Page<Boi> getBoisComPesosPorData(BoiFilterRequestDTO filterDTO, Pageable pageable);
 }

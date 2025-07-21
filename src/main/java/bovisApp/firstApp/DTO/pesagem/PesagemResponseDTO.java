@@ -29,5 +29,43 @@ private Long id;
         this.medicacoes = pesagem.getMedicacoes();
     }
 
+    public Long getId() {
+        return id;
+    }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Date getData() {
+        return data;
+    }
+
+    public void setData(Date data) {
+        this.data = data;
+    }
+
+    public Double getPeso() {
+        return peso;
+    }
+
+    public void setPeso(Double peso) {
+        this.peso = peso;
+    }
+
+    public String getDescricao() {
+        return descricao;
+    }
+
+    public void setDescricao(String descricao) {
+        this.descricao = descricao;
+    }
+
+    public List<Medicacao> getMedicacoes() {
+        return medicacoes;
+    }
+
+    public void setMedicacoes(List<Medicacao> medicacoes) {
+        this.medicacoes = medicacoes;
+    }
 }

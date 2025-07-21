@@ -5,6 +5,7 @@ import javax.persistence.*;
 import java.math.BigDecimal;
 
 @Entity
+@Table(name = "transacoes_bois")
 public class TransacaoBoi {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "transacaoboi_seq_gen")

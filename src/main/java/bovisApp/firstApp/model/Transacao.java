@@ -10,6 +10,7 @@ import java.util.List;
 
 
 @Entity
+@Table(name = "transacoes")
 public class Transacao {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "transacao_seq_gen")

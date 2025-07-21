@@ -1,5 +1,6 @@
 package bovisApp.firstApp.controller;
 
+import bovisApp.firstApp.DTO.boi.BoiComPesagensPorDataDTO;
 import bovisApp.firstApp.DTO.boi.BoiFilterRequestDTO;
 import bovisApp.firstApp.DTO.boi.BoiRequestDTO;
 import bovisApp.firstApp.DTO.boi.BoiResponseDTO;
@@ -68,6 +69,16 @@ public class BoiAPIController {
     ){
         Page<Boi> boiPage = boiService.searchBois(filterDTO, pageable);
         return boiPage.map(BoiResponseDTO::new);
+    }
+
+    @GetMapping(value = "/bois-pesagens-por-data")
+    @ResponseStatus(HttpStatus.OK)
+    public Page<BoiComPesagensPorDataDTO> getBoisComPesosPorData(
+            @ModelAttribute BoiFilterRequestDTO filterDTO,
+            Pageable pageable
+    ){
+        Page<Boi> boiPage = boiService.getBoisComPesosPorData(filterDTO, pageable);
+        return boiPage.map(BoiComPesagensPorDataDTO::new);
     }
 
 }

@@ -2,6 +2,7 @@ package bovisApp.firstApp.DTO.transacao;
 
 import bovisApp.firstApp.model.Boi;
 import bovisApp.firstApp.model.Transacao;
+import bovisApp.firstApp.model.TransacaoBoi;
 import bovisApp.firstApp.model.enumeration.ModeloTransacao;
 import bovisApp.firstApp.model.enumeration.TransacaoOperacao;
 import java.math.BigDecimal;
@@ -40,6 +41,16 @@ public class TransacaoResponseDTO {
         this.operacao = transacao.getOperacao();
         this.contraParte = transacao.getContraParte();
         this.transacaoRelacionada = transacao.getTransacaoRelacionada();
+    }
+
+    public TransacaoResponseDTO(TransacaoBoi transacaoBoi) {
+        this.id = transacaoBoi.getTransacao().getId();
+        this.valor = transacaoBoi.getTransacao().getValor();
+        this.descricao = transacaoBoi.getTransacao().getDescricao();
+        this.modeloTransacao = transacaoBoi.getTransacao().getModeloTransacao();
+        this.operacao = transacaoBoi.getTransacao().getOperacao();
+        this.contraParte = transacaoBoi.getTransacao().getContraParte();
+        this.transacaoRelacionada = transacaoBoi.getTransacao().getTransacaoRelacionada();
     }
 
     public Long getId() {

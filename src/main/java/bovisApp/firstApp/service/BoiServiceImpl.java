@@ -9,6 +9,8 @@ import bovisApp.firstApp.model.Raca;
 import bovisApp.firstApp.model.enumeration.EstadoBoi;
 import bovisApp.firstApp.model.enumeration.TransacaoOperacao;
 import bovisApp.firstApp.repository.BoiRepository;
+import bovisApp.firstApp.repository.PesagemRepository;
+import bovisApp.firstApp.repository.TransacaoBoiRepository;
 import bovisApp.firstApp.specification.BoiSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -21,13 +23,22 @@ import java.util.stream.Collectors;
 
 @Service
 public class BoiServiceImpl implements BoiService {
+
+    private final PesagemRepository pesagemRepository;
+    private final TransacaoBoiRepository transacaoBoiRepository;
     private final BoiRepository boiRepository;
     private final RacaService racaService;
 
     @Autowired
-    public BoiServiceImpl(BoiRepository boiRepository, RacaService racaService) {
+    public BoiServiceImpl(BoiRepository boiRepository,
+                          RacaService racaService,
+                          PesagemRepository pesagemRepository,
+                          TransacaoBoiRepository transacaoBoiRepository)
+    {
         this.boiRepository = boiRepository;
         this.racaService = racaService;
+        this.pesagemRepository = pesagemRepository;
+        this.transacaoBoiRepository = transacaoBoiRepository;
     }
 
     @Override
@@ -122,11 +133,8 @@ public class BoiServiceImpl implements BoiService {
         boiRepository.delete(boi);
         return boi;
     }
-
-    @Override
-    public Page<Boi> searchBois(BoiFilterRequestDTO filterDTO, Pageable pageable) {
+    private Specification<Boi> buildSpecification(BoiFilterRequestDTO filterDTO){
         Specification<Boi> spec = Specification.where(null);
-
         if (filterDTO.getRacaId() != null){
             spec = spec.and(BoiSpecification.hasRaca(filterDTO.getRacaId()));
         }
@@ -155,6 +163,20 @@ public class BoiServiceImpl implements BoiService {
                     TransacaoOperacao.COMPRA
             ));
         }
+        return spec;
+    }
+    @Override
+    public Page<Boi> searchBois(BoiFilterRequestDTO filterDTO, Pageable pageable) {
+        Specification<Boi> spec = buildSpecification(filterDTO);
+
+        return boiRepository.findAll(spec, pageable);
+    }
+
+    @Override
+    public Page<Boi> getBoisComPesosPorData(BoiFilterRequestDTO filterDTO, Pageable pageable) {
+        Specification<Boi> spec = buildSpecification(filterDTO);
+        spec = spec.and(BoiSpecification.fetchPesagens());
+
         return boiRepository.findAll(spec, pageable);
     }
 

@@ -7,14 +7,14 @@ import java.util.List;
 import java.util.Objects;
 
 @Entity
-@Table
+@Table(name = "bois")
 public class Boi {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "boi_seq_gen")
     @SequenceGenerator(name = "boi_seq_gen", sequenceName = "boi_id_seq", allocationSize = 1)
     private Long id;
     private Integer numero;
-    @OneToMany
+    @OneToMany(mappedBy = "boi", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Pesagem> pesagens;
     @ManyToOne
     @JoinColumn(name = "raca_id", nullable = false)

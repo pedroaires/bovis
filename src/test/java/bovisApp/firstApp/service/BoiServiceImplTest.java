@@ -7,6 +7,8 @@ import bovisApp.firstApp.model.Boi;
 import bovisApp.firstApp.model.Raca;
 import bovisApp.firstApp.model.enumeration.EstadoBoi;
 import bovisApp.firstApp.repository.BoiRepository;
+import bovisApp.firstApp.repository.PesagemRepository;
+import bovisApp.firstApp.repository.TransacaoBoiRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,6 +37,12 @@ class BoiServiceImplTest {
     @Mock
     private RacaService racaService;
 
+    @Mock
+    private PesagemRepository pesagemRepository;
+
+    @Mock
+    private TransacaoBoiRepository transacaoBoiRepository;
+
     private static final String[] RACAS = {"Angus", "Brangus", "Nelore", "Guzera", "Tabapua"};
     private static final String[] ESTADOS = {"na_fazenda", "vendido", "morto"};
     private String geraRacaStrAleatoria(){
@@ -61,7 +69,7 @@ class BoiServiceImplTest {
     }
     @BeforeEach
     void setUp() {
-        boiService_underTest = new BoiServiceImpl(boiRepository, racaService);
+        boiService_underTest = new BoiServiceImpl(boiRepository, racaService, pesagemRepository, transacaoBoiRepository);
     }
 
     @Test
