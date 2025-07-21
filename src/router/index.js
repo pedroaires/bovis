@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import DefaultLayout from '@/layouts/DefaultLayout.vue';
 import HomeView from '@/views/HomeView.vue';
+import CattleVisualizationView from '@/views/CattleVisualizationView.vue';
 
 const routes = [
   {
@@ -12,7 +13,11 @@ const routes = [
         name: 'Home',
         component: HomeView,
       },
-      // Outras páginas podem ser adicionadas aqui
+      {
+        path: '/cattle-visualization',
+        name: 'CattleVisualization',
+        component: CattleVisualizationView,
+      }
     ],
   },
 ];

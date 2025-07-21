@@ -19,7 +19,7 @@
       headers: [
         { title: 'ID', key: 'id' },
         { title: 'Número', key: 'numero' },
-        { title: 'Lote ID', key: 'loteId' },
+        { title: 'Compra ID', key: 'compraId' },
         { title: 'Estado do Boi', key: 'estadoBoi' },
         { title: 'Raça', key: 'raca' },
       ],

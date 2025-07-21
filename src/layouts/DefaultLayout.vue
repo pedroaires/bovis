@@ -2,7 +2,20 @@
   <v-app>
     <!-- Menu lateral -->
     <v-navigation-drawer v-model="drawer">
-      <!-- Conteúdo do Drawer -->
+      <v-list>
+        <v-list-item
+          link
+          to="/"
+          title="Início"
+          prepend-icon="mdi-home"
+        />
+        <v-list-item
+          link
+          to="/cattle-visualization"
+          title="Visualização dos Bois"
+          prepend-icon="mdi-chart-line"
+        />
+      </v-list>
     </v-navigation-drawer>
 
     <!-- Barra de navegação superior -->
