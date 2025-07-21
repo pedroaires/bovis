@@ -1,8 +1,7 @@
 <template>
     <div>
         <h1>Histórico de Pesagens</h1>
-        <!-- Aqui você adicionaria os campos de filtro -->
-        <!-- Exemplo de como você chamaria o DataTable -->
+        <BoiFilters :filters="filters" @apply="onFilterApply" />
         <DataTable :headers="headers" :items="cattleWeightHistory" />
 
         <!-- Aqui você adicionaria os controles de paginação, se o DataTable não os tiver internamente -->
@@ -17,12 +16,14 @@
 
 <script>
 import DataTable from '../organisms/DataTable.vue';
+import BoiFilters from '../organisms/BoiFilters.vue';
 import api from '../../services/api.js';
 
 export default{
     name: 'CattleWeightHistory',
     components: {
         DataTable,
+        BoiFilters
     },
     data(){
         return{
@@ -114,6 +115,11 @@ export default{
             } catch (error) {
                 console.error('Erro ao buscar histórico de pesagens:', error)
             }
+        },
+        onFilterApply(newFilters) {
+            this.filters = { ...newFilters }
+            this.pagination.page = 0
+            this.fetchCattleWeightHistory()
         },
         onPageChange(newPage) {
             this.pagination.page = newPage;
