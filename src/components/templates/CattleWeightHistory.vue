@@ -2,15 +2,14 @@
     <div>
         <h1>Histórico de Pesagens</h1>
         <BoiFilters :filters="filters" @apply="onFilterApply" />
-        <DataTable :headers="headers" :items="cattleWeightHistory" />
-
-        <!-- Aqui você adicionaria os controles de paginação, se o DataTable não os tiver internamente -->
-        <!-- Exemplo: -->
-        <div class="pagination-controls">
-            <button @click="onPageChange(pagination.page - 1)" :disabled="pagination.page === 0">Anterior</button>
-            <span>Página {{ pagination.page + 1 }} de {{ totalPages }}</span>
-            <button @click="onPageChange(pagination.page + 1)" :disabled="pagination.page >= totalPages - 1">Próxima</button>
-        </div>
+        <DataTable
+        :headers="headers"
+        :items="cattleWeightHistory"
+        :options="options"
+        :total-items="totalElements"
+        :loading="loading"
+        @update:options="onOptionsUpdate"
+        />
     </div>
 </template>
 
@@ -46,28 +45,45 @@ export default{
                 numeroBoi: null,
                 estadoBoi: null,
             },
-            pagination: {
-                page: 0,
-                size: 10,
-                sortBy: 'numero',
-                sortDesc: false,
-            },
+            loading: false,
+    options: {
+      page: 1,
+      itemsPerPage: 10,
+      sortBy: ['numero'],
+      sortDesc: [false],
+    },
             totalElements: 0,
-            totalPages: 0,
+            
         }
     },
     async created() {
         await this.fetchCattleWeightHistory();
     },
+    watch: {
+  options: {
+    deep: true,
+    handler() {
+      this.fetchCattleWeightHistory()
+    }
+  }
+},
     methods: {
         buildRequestParams() {
+            const { page, itemsPerPage, sortBy, sortDesc } = this.options
+            let sortParam
+            if (Array.isArray(sortBy) && sortBy.length > 0) {
+                const key = sortBy[0]?.key || sortBy[0]
+                const desc = Array.isArray(sortDesc) && sortDesc[0]
+                sortParam = `${key},${desc ? 'desc' : 'asc'}`
+            }
             return {
                 ...this.filters,
-                page: this.pagination.page,
-                size: this.pagination.size,
-                sort: `${this.pagination.sortBy},${this.pagination.sortDesc ? 'desc' : 'asc'}`,
+                page: page - 1,
+                size: itemsPerPage,
+                ...(sortParam ? { sort: sortParam } : {})
             }
         },
+
         extractAllDates(content) {
             const dateSet = new Set()
             content.forEach(boi => {
@@ -102,6 +118,7 @@ export default{
         },
         async fetchCattleWeightHistory() {
             try {
+                this.loading = true
                 const params = this.buildRequestParams()
                 const response = await api.fetchCattleWeightHistory(params)
                 const content = response.data.content
@@ -111,40 +128,29 @@ export default{
                 this.headers = this.buildHeaders(allDates)
                 this.cattleWeightHistory = this.buildTableRows(content, allDates)
                 this.totalElements = response.data.totalElements
-                this.totalPages = response.data.totalPages
+                
             } catch (error) {
                 console.error('Erro ao buscar histórico de pesagens:', error)
+            } finally {
+                this.loading = false
             }
         },
         onFilterApply(newFilters) {
+            console.log("aplicando filters");
             this.filters = { ...newFilters }
-            this.pagination.page = 0
-            this.fetchCattleWeightHistory()
-        },
-        onPageChange(newPage) {
-            this.pagination.page = newPage;
             this.fetchCattleWeightHistory();
+            this.options.page = 1
         },
-        onSizeChange(newSize) {
-            this.pagination.size = newSize;
-            this.pagination.page = 0;
-            this.fetchCattleWeightHistory();
-        },
-        onSortChange(sortBy, sortDesc) {
-            this.pagination.sortBy = sortBy;
-            this.pagination.sortDesc = sortDesc;
-            this.fetchCattleWeightHistory();
-        },
-        applyFilters() {
-            this.pagination.page = 0;
-            this.fetchCattleWeightHistory();
+
+        onOptionsUpdate(newOpts) {
+            this.options = { ...newOpts }
         },
     },
 }
 </script>
 
 <style scoped>
-h1 {
-  margin-bottom: 16px;
-}
+    h1 {
+        margin-bottom: 16px;
+    }
 </style>
