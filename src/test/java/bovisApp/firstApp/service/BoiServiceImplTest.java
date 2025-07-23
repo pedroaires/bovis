@@ -37,11 +37,7 @@ class BoiServiceImplTest {
     @Mock
     private RacaService racaService;
 
-    @Mock
-    private PesagemRepository pesagemRepository;
 
-    @Mock
-    private TransacaoBoiRepository transacaoBoiRepository;
 
     private static final String[] RACAS = {"Angus", "Brangus", "Nelore", "Guzera", "Tabapua"};
     private static final String[] ESTADOS = {"na_fazenda", "vendido", "morto"};
@@ -69,7 +65,7 @@ class BoiServiceImplTest {
     }
     @BeforeEach
     void setUp() {
-        boiService_underTest = new BoiServiceImpl(boiRepository, racaService, pesagemRepository, transacaoBoiRepository);
+        boiService_underTest = new BoiServiceImpl(boiRepository, racaService);
     }
 
     @Test

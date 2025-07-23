@@ -1,10 +1,8 @@
 package bovisApp.firstApp.controller;
 
-import bovisApp.firstApp.DTO.boi.BoiComPesagensPorDataDTO;
-import bovisApp.firstApp.DTO.boi.BoiFilterRequestDTO;
-import bovisApp.firstApp.DTO.boi.BoiRequestDTO;
-import bovisApp.firstApp.DTO.boi.BoiResponseDTO;
+import bovisApp.firstApp.DTO.boi.*;
 import bovisApp.firstApp.model.Boi;
+import bovisApp.firstApp.service.BoiPesagemFacadeService;
 import bovisApp.firstApp.service.BoiService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,9 +19,12 @@ import java.util.stream.Collectors;
 public class BoiAPIController {
     private final BoiService boiService;
 
+    private final BoiPesagemFacadeService boiPesagemService;
+
     @Autowired
-    public BoiAPIController(BoiService boiService) {
+    public BoiAPIController(BoiService boiService, BoiPesagemFacadeService boiPesagemService) {
         this.boiService = boiService;
+        this.boiPesagemService = boiPesagemService;
     }
 
     @GetMapping(value = "/listBois")
@@ -79,6 +80,13 @@ public class BoiAPIController {
     ){
         Page<Boi> boiPage = boiService.getBoisComPesosPorData(filterDTO, pageable);
         return boiPage.map(BoiComPesagensPorDataDTO::new);
+    }
+
+    @GetMapping("/ativos-com-peso")
+    public List<BoiComUltimaPesagemDTO> listarBoisComUltimaPesagem() {
+        return boiPesagemService.getBoisAtivosComUltimaPesagem().stream()
+                .map(pair -> BoiComUltimaPesagemDTO.from(pair.getFirst(), pair.getSecond()))
+                .collect(Collectors.toList());
     }
 
 }

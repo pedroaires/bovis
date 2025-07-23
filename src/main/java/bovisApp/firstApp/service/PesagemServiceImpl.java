@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -85,6 +86,12 @@ public class PesagemServiceImpl implements PesagemService{
         pesagem.setMedicacoes(medicacoes);
         pesagem.setBoi(boi);
         return pesagemRepository.save(pesagem);
+    }
+
+    @Override
+    public Optional<Pesagem> getUltimaPesagemPorBoiId(Long boiId) {
+        List<Pesagem> pesagens = getPesagemByBoiId(boiId);
+        return pesagens.stream().max(Comparator.comparing(Pesagem::getData));
     }
 
     private void validaPesagemDTO(PesagemRequestDTO dto){

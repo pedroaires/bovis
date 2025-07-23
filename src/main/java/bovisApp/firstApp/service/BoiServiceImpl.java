@@ -9,8 +9,6 @@ import bovisApp.firstApp.model.Raca;
 import bovisApp.firstApp.model.enumeration.EstadoBoi;
 import bovisApp.firstApp.model.enumeration.TransacaoOperacao;
 import bovisApp.firstApp.repository.BoiRepository;
-import bovisApp.firstApp.repository.PesagemRepository;
-import bovisApp.firstApp.repository.TransacaoBoiRepository;
 import bovisApp.firstApp.specification.BoiSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -24,21 +22,18 @@ import java.util.stream.Collectors;
 @Service
 public class BoiServiceImpl implements BoiService {
 
-    private final PesagemRepository pesagemRepository;
-    private final TransacaoBoiRepository transacaoBoiRepository;
     private final BoiRepository boiRepository;
     private final RacaService racaService;
 
+
     @Autowired
-    public BoiServiceImpl(BoiRepository boiRepository,
-                          RacaService racaService,
-                          PesagemRepository pesagemRepository,
-                          TransacaoBoiRepository transacaoBoiRepository)
+    public BoiServiceImpl(
+            BoiRepository boiRepository,
+            RacaService racaService
+    )
     {
         this.boiRepository = boiRepository;
         this.racaService = racaService;
-        this.pesagemRepository = pesagemRepository;
-        this.transacaoBoiRepository = transacaoBoiRepository;
     }
 
     @Override
@@ -178,6 +173,11 @@ public class BoiServiceImpl implements BoiService {
         spec = spec.and(BoiSpecification.fetchPesagens());
 
         return boiRepository.findAll(spec, pageable);
+    }
+
+    @Override
+    public List<Boi> getBoisByEstado(EstadoBoi estadoBoi){
+        return boiRepository.findAllByEstadoBoi(estadoBoi);
     }
 
 

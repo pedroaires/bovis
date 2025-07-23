@@ -1,9 +1,11 @@
 package bovisApp.firstApp.service;
 
 import bovisApp.firstApp.DTO.pesagem.PesagemRequestDTO;
+import bovisApp.firstApp.model.Boi;
 import bovisApp.firstApp.model.Pesagem;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface PesagemService {
     Pesagem getPesagemById(Long id);
@@ -17,4 +19,6 @@ public interface PesagemService {
     Pesagem deletaPesagem(Long id);
 
     Pesagem editaPesagem(PesagemRequestDTO pesagemRequestDTO, Long pesagemId);
+
+    Optional<Pesagem> getUltimaPesagemPorBoiId(Long boiId);
 }
