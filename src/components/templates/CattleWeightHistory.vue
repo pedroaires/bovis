@@ -2,11 +2,11 @@
     <div>
         <h1>Histórico de Pesagens</h1>
         <BoiFilters :filters="filters" @apply="onFilterApply" />
-        <DataTable
+        <v-data-table-server
         :headers="headers"
         :items="cattleWeightHistory"
         :options="options"
-        :total-items="totalElements"
+        :items-length="totalElements"
         :loading="loading"
         @update:options="onOptionsUpdate"
         />
@@ -14,14 +14,12 @@
 </template>
 
 <script>
-import DataTable from '../organisms/DataTable.vue';
 import BoiFilters from '../organisms/BoiFilters.vue';
 import api from '../../services/api.js';
 
 export default{
     name: 'CattleWeightHistory',
     components: {
-        DataTable,
         BoiFilters
     },
     data(){

@@ -12,6 +12,9 @@ export default {
   async getCattle() {
     return apiClient.get('/boi/listBois');
   },
+  async getActiveCattleWithWeight() {
+    return apiClient.get('/boi/ativos-com-peso');
+  },
   async fetchCattleWeightHistory(params){
     return apiClient.get('/boi/bois-pesagens-por-data', {params});
   }

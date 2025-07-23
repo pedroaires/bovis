@@ -1,34 +1,32 @@
 <template>
     <div>
       <h1>Lista de Gado</h1>
-      <DataTable :headers="headers" :items="cattle" />
+      <v-data-table :headers="headers" :items="cattle" />
     </div>
   </template>
   
   <script>
-  import DataTable from '../organisms/DataTable.vue';
   import api from '../../services/api.js';
   
   export default {
     name: 'CattleList',
-    components: {
-      DataTable,
-    },
     data() {
         return {
       headers: [
         { title: 'ID', key: 'id' },
         { title: 'Número', key: 'numero' },
-        { title: 'Compra ID', key: 'compraId' },
-        { title: 'Estado do Boi', key: 'estadoBoi' },
         { title: 'Raça', key: 'raca' },
+        { title: 'Estado do Boi', key: 'estadoBoi' },
+        { title: 'Data Última Pesagem', key: 'dataUltimaPesagem' },
+        { title: 'Peso', key: 'peso' },
+        
       ],
       cattle: [],
     };
     },
     async created() {
       try {
-        const response = await api.getCattle();
+        const response = await api.getActiveCattleWithWeight();
         this.cattle = response.data;
       } catch (error) {
         console.error('Erro ao buscar dados do backend:', error);
