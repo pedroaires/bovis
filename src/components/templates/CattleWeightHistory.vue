@@ -22,13 +22,14 @@ export default{
         BoiFilters
     },
     data(){
-        return{
-            headers: [
-                { title: 'ID do Boi', key: 'id' },
-                { title: 'Número do Boi', key: 'numero' },
-                { title: 'Raça', key: 'racaNome' },
-                { title: 'Estado do Boi', key: 'estadoBoi' },
+        return {
+           baseHeaders: [
+                { title: 'ID do Boi', key: 'id'},
+                { title: 'Número do Boi', key: 'numero'},
+                { title: 'Raça', key: 'raca'},
+                { title: 'Estado do Boi', key: 'estadoBoi'},
             ],
+            headers: [],
             cattleWeightHistory: [],
             allDates: [],
             filters: {
@@ -55,19 +56,22 @@ export default{
     },
     methods: {
         buildRequestParams() {
-            const { page, itemsPerPage, sortBy, sortDesc } = this.options
+            const { page, itemsPerPage, sortBy } = this.options
             let sortParam
             if (Array.isArray(sortBy) && sortBy.length > 0) {
-                const key = sortBy[0]?.key || sortBy[0]
-                const desc = Array.isArray(sortDesc) && sortDesc[0]
-                sortParam = `${key},${desc ? 'desc' : 'asc'}`
+                const sortItem = sortBy[0]
+                const key = sortItem.key
+                const order = sortItem.order || 'asc'
+                sortParam = `${key},${order}`
             }
-            return {
+            const params = {
                 ...this.filters,
                 page: page - 1,
                 size: itemsPerPage === -1 ? this.totalElements : itemsPerPage,
                 ...(sortParam ? { sort: sortParam } : {})
             }
+
+            return params
         },
 
         extractAllDates(content) {
@@ -81,11 +85,8 @@ export default{
         },
         buildHeaders(dates) {
             return [
-                { title: 'ID do Boi', key: 'id' },
-                { title: 'Número do Boi', key: 'numero' },
-                { title: 'Raça', key: 'raca' },
-                { title: 'Estado do Boi', key: 'estadoBoi' },
-                ...dates.map(date => ({ title: date, key: `peso_${date}` })),
+                ...this.baseHeaders,
+                ...dates.map(date => ({ title: date, key: `peso_${date}`, sortable: false})),
             ]
         },
         buildTableRows(content, dates) {
@@ -110,6 +111,8 @@ export default{
                 const content = response.data.content
 
                 const allDates = this.extractAllDates(content)
+                this.headers = this.buildHeaders(allDates)
+
                 this.allDates = allDates
                 this.headers = this.buildHeaders(allDates)
                 this.cattleWeightHistory = this.buildTableRows(content, allDates)
