@@ -5,7 +5,6 @@
         <v-data-table-server
         :headers="headers"
         :items="cattleWeightHistory"
-        :options="options"
         :items-length="totalElements"
         :loading="loading"
         @update:options="onOptionsUpdate"
@@ -44,27 +43,16 @@ export default{
                 estadoBoi: null,
             },
             loading: false,
-    options: {
-      page: 1,
-      itemsPerPage: 10,
-      sortBy: ['numero'],
-      sortDesc: [false],
-    },
+            options: {
+                page: 1,
+                itemsPerPage: 10,
+                sortBy: ['numero'],
+                sortDesc: [false],
+            },
             totalElements: 0,
             
         }
     },
-    async created() {
-        await this.fetchCattleWeightHistory();
-    },
-    watch: {
-  options: {
-    deep: true,
-    handler() {
-      this.fetchCattleWeightHistory()
-    }
-  }
-},
     methods: {
         buildRequestParams() {
             const { page, itemsPerPage, sortBy, sortDesc } = this.options
@@ -77,7 +65,7 @@ export default{
             return {
                 ...this.filters,
                 page: page - 1,
-                size: itemsPerPage,
+                size: itemsPerPage === -1 ? this.totalElements : itemsPerPage,
                 ...(sortParam ? { sort: sortParam } : {})
             }
         },
@@ -134,14 +122,14 @@ export default{
             }
         },
         onFilterApply(newFilters) {
-            console.log("aplicando filters");
             this.filters = { ...newFilters }
-            this.fetchCattleWeightHistory();
             this.options.page = 1
+            this.fetchCattleWeightHistory()
         },
 
         onOptionsUpdate(newOpts) {
             this.options = { ...newOpts }
+            this.fetchCattleWeightHistory()
         },
     },
 }
