@@ -82,7 +82,7 @@ public class BoiAPIController {
         return boiPage.map(BoiComPesagensPorDataDTO::new);
     }
 
-    @GetMapping("/ativos-com-peso")
+    @GetMapping(value = "/ativos-com-peso")
     public List<BoiComUltimaPesagemDTO> listarBoisComUltimaPesagem() {
         return boiPesagemService.getBoisAtivosComUltimaPesagem().stream()
                 .map(pair -> BoiComUltimaPesagemDTO.from(pair.getFirst(), pair.getSecond()))

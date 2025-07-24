@@ -52,6 +52,9 @@ public class BoiSpecification {
             if (pesoMin == null && pesoMax == null){
                 return criteriaBuilder.isTrue(criteriaBuilder.literal(true));
             }
+
+            query.distinct(true);
+
             Join<Boi, Pesagem> pesagemJoin = root.join("pesagens", JoinType.INNER);
             Predicate predicate = criteriaBuilder.isTrue(criteriaBuilder.literal((true)));
             if(pesoMin != null){
@@ -74,6 +77,8 @@ public class BoiSpecification {
             if (dataInicio == null && dataFim == null){
                 return criteriaBuilder.isTrue(criteriaBuilder.literal(true));
             }
+
+            query.distinct(true);
             Join<Boi, Pesagem> pesagemJoin = root.join("pesagens", JoinType.INNER);
             Predicate predicate = criteriaBuilder.isTrue(criteriaBuilder.literal((true)));
             if(dataInicio != null){
@@ -97,6 +102,7 @@ public class BoiSpecification {
             if (dataInicio == null && dataFim == null){
                 return criteriaBuilder.isTrue(criteriaBuilder.literal(true));
             }
+            query.distinct(true);
             Join<Boi, TransacaoBoi> transacaoBoiJoin = root.join("transacoes_bois", JoinType.INNER);
             Join<TransacaoBoi, Transacao> transacaoJoin = transacaoBoiJoin.join("transacoes", JoinType.INNER);
             Predicate predicate = criteriaBuilder.isTrue(criteriaBuilder.literal((true)));
