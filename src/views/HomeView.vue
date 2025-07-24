@@ -31,7 +31,6 @@
     <v-row>
       <v-col cols="12">
         <v-card class="pa-4">
-          <v-card-title>Lista de Gado</v-card-title>
           <v-card-text>
             <CattleList />
           </v-card-text>
