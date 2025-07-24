@@ -7,7 +7,7 @@
           label="Número do Boi"
           type="number"
           variant="outlined"
-          dense
+          density="compact"
           clearable
         />
       </v-col>
@@ -18,7 +18,7 @@
           :items="estados"
           label="Estado do Boi"
           variant="outlined"
-          dense
+          density="compact"
           clearable
         />
       </v-col>
@@ -29,7 +29,7 @@
           label="Peso mínimo"
           type="number"
           variant="outlined"
-          dense
+          density="compact"
           clearable
         />
       </v-col>
@@ -40,7 +40,7 @@
           label="Peso máximo"
           type="number"
           variant="outlined"
-          dense
+          density="compact"
           clearable
         />
       </v-col>
@@ -52,16 +52,15 @@
           transition="scale-transition"
           offset-y
         >
-          <template #activator="{ on, attrs }">
+          <template #activator="{ props }">
             <v-text-field
               v-model="internalFilters.dataPesagemInicio"
               label="Pesagem início"
               readonly
               clearable
-              dense
+              density="compact"
               variant="outlined"
-              v-bind="attrs"
-              v-on="on"
+              v-bind="props"
             />
           </template>
           <v-date-picker
@@ -79,16 +78,15 @@
           transition="scale-transition"
           offset-y
         >
-          <template #activator="{ on, attrs }">
+          <template #activator="{ props }">
             <v-text-field
               v-model="internalFilters.dataPesagemFim"
               label="Pesagem fim"
               readonly
               clearable
-              dense
+              density="compact"
               variant="outlined"
-              v-bind="attrs"
-              v-on="on"
+              v-bind="props"
             />
           </template>
           <v-date-picker
