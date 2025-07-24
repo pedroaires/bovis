@@ -4,7 +4,6 @@ import bovisApp.firstApp.model.Boi;
 import bovisApp.firstApp.model.Pesagem;
 
 import java.time.ZoneId;
-import java.util.Optional;
 
 public class BoiComUltimaPesagemDTO {
     private Long id;

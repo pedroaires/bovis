@@ -11,4 +11,6 @@ public interface BoiPesagemFacadeService {
     List<Pair<Boi, Pesagem>> getBoisAtivosComUltimaPesagem();
 
     Pesagem cadastraPesagem(PesagemRequestDTO pesagemRequestDTO);
+
+    Pesagem editaPesagem(PesagemRequestDTO pesagemRequestDTO, Long pesagemId);
 }

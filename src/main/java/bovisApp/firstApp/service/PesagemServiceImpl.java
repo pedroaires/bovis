@@ -20,14 +20,11 @@ import java.util.stream.Collectors;
 public class PesagemServiceImpl implements PesagemService{
     private final PesagemRepository pesagemRepository;
 
-    private final BoiService boiService;
-
     private final MedicacaoService medicacaoService;
 
     @Autowired
-    public PesagemServiceImpl(PesagemRepository pesagemRepository, BoiService boiService, MedicacaoService medicacaoService) {
+    public PesagemServiceImpl(PesagemRepository pesagemRepository, MedicacaoService medicacaoService) {
         this.pesagemRepository = pesagemRepository;
-        this.boiService = boiService;
         this.medicacaoService = medicacaoService;
     }
     @Override
@@ -50,7 +47,7 @@ public class PesagemServiceImpl implements PesagemService{
     }
 
     @Override
-    public Pesagem cadastraPesagem(PesagemRequestDTO dto) {
+    public Pesagem cadastraPesagem(PesagemRequestDTO dto, Boi boi) {
         validaPesagemDTO(dto);
 
         String descricao = Optional.ofNullable(dto.getDescricao()).orElse("");
@@ -59,7 +56,6 @@ public class PesagemServiceImpl implements PesagemService{
                 .map(medicacaoService::getOrCreateMedicacao)
                 .collect(Collectors.toList());
 
-        Boi boi = boiService.getBoiById(dto.getBoiId());
 
         Pesagem pesagem = new Pesagem(
                 boi,
@@ -72,14 +68,13 @@ public class PesagemServiceImpl implements PesagemService{
         return pesagemRepository.save(pesagem);
     }
     @Override
-    public Pesagem editaPesagem(PesagemRequestDTO dto, Long pesagemId) {
+    public Pesagem editaPesagem(PesagemRequestDTO dto, Long pesagemId, Boi boi) {
         Pesagem pesagem = getPesagemById(pesagemId);
         validaPesagemDTO(dto);
         String descricao = Optional.ofNullable(dto.getDescricao()).orElse("");
         List<String> medicacoesStr = Optional.ofNullable(dto.getMedicacoes()).orElse(Collections.emptyList());
         List<Medicacao> medicacoes = medicacoesStr.stream().map(medicacaoService::getOrCreateMedicacao).collect(Collectors.toList());
 
-        Boi boi = boiService.getBoiById(dto.getBoiId());
         pesagem.setData(dto.getData());
         pesagem.setPeso(dto.getPeso());
         pesagem.setDescricao(descricao);
@@ -94,7 +89,7 @@ public class PesagemServiceImpl implements PesagemService{
         return pesagens.stream().max(Comparator.comparing(Pesagem::getData));
     }
 
-    private void validaPesagemDTO(PesagemRequestDTO dto){
+    public void validaPesagemDTO(PesagemRequestDTO dto){
         if (dto == null){
             throw new PesagemInvalidaException("Pesagem não pode ser nula");
         }

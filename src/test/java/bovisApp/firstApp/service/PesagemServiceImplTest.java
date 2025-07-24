@@ -30,9 +30,6 @@ public class PesagemServiceImplTest {
     private PesagemRepository pesagemRepository;
 
     @Mock
-    private BoiService boiService;
-
-    @Mock
     private MedicacaoService medicacaoService;
 
     private Date gerarDataAleatoria() {
@@ -61,7 +58,7 @@ public class PesagemServiceImplTest {
     }
     @BeforeEach
     void setUp(){
-        pesagemService_underTest = new PesagemServiceImpl(pesagemRepository, boiService, medicacaoService);
+        pesagemService_underTest = new PesagemServiceImpl(pesagemRepository, medicacaoService);
     }
 
     @Test
@@ -127,7 +124,6 @@ public class PesagemServiceImplTest {
 
         // when
         when(medicacaoService.getOrCreateMedicacao(medicacaoStr)).thenReturn(medicacao);
-        when(boiService.getBoiById(boi.getId())).thenReturn(boi);
         when(pesagemRepository.save(any(Pesagem.class))).thenAnswer(invocation -> invocation.getArgument(0));
         ArgumentCaptor<Pesagem> pesagemArgumentCaptor = ArgumentCaptor.forClass(Pesagem.class);
         Pesagem response = pesagemService_underTest.cadastraPesagem(
@@ -137,7 +133,7 @@ public class PesagemServiceImplTest {
                         pesagemEsperada.getDescricao(),
                         pesagemEsperada.getData(),
                         List.of(medicacaoStr)
-                )
+                ), boi
         );
 
 
@@ -173,7 +169,7 @@ public class PesagemServiceImplTest {
                         pesagemEsperada.getDescricao(),
                         pesagemEsperada.getData(),
                         List.of(medicacaoStr)
-                )
+                ), boi
         )).isInstanceOf(PesagemInvalidaException.class);
     }
 
@@ -199,7 +195,7 @@ public class PesagemServiceImplTest {
                         pesagemEsperada.getDescricao(),
                         null,
                         List.of(medicacaoStr)
-                )
+                ), boi
         )).isInstanceOf(PesagemInvalidaException.class);
     }
 
@@ -225,7 +221,7 @@ public class PesagemServiceImplTest {
                         pesagemEsperada.getDescricao(),
                         pesagemEsperada.getData(),
                         List.of(medicacaoStr)
-                )
+                ), boi
         )).isInstanceOf(PesagemInvalidaException.class);
     }
 
@@ -244,7 +240,6 @@ public class PesagemServiceImplTest {
         // when
         when(pesagemRepository.findById(pesagemEsperada.getId())).thenReturn(java.util.Optional.of(pesagemEsperada));
         when(medicacaoService.getOrCreateMedicacao(medicacaoStr)).thenReturn(medicacao);
-        when(boiService.getBoiById(boi.getId())).thenReturn(boi);
         when(pesagemRepository.save(any(Pesagem.class))).thenAnswer(invocation -> invocation.getArgument(0));
         ArgumentCaptor<Pesagem> pesagemArgumentCaptor = ArgumentCaptor.forClass(Pesagem.class);
         Pesagem response = pesagemService_underTest.editaPesagem(
@@ -255,7 +250,8 @@ public class PesagemServiceImplTest {
                         pesagemEsperada.getData(),
                         List.of(medicacaoStr)
                 ),
-                pesagemEsperada.getId()
+                pesagemEsperada.getId(),
+                boi
         );
 
         // then
@@ -288,7 +284,8 @@ public class PesagemServiceImplTest {
                         pesagemEsperada.getData(),
                         List.of(medicacaoStr)
                 ),
-                pesagemEsperada.getId()
+                pesagemEsperada.getId(),
+                boi
         )).isInstanceOf(PesagemNaoEncontradaException.class);
     }
 
@@ -315,7 +312,8 @@ public class PesagemServiceImplTest {
                         pesagemEsperada.getData(),
                         List.of(medicacaoStr)
                 ),
-                pesagemEsperada.getId()
+                pesagemEsperada.getId(),
+                boi
         )).isInstanceOf(PesagemInvalidaException.class);
     }
 
@@ -342,7 +340,8 @@ public class PesagemServiceImplTest {
                         null,
                         List.of(medicacaoStr)
                 ),
-                pesagemEsperada.getId()
+                pesagemEsperada.getId(),
+                boi
         )).isInstanceOf(PesagemInvalidaException.class);
     }
 
@@ -370,7 +369,8 @@ public class PesagemServiceImplTest {
                         pesagemEsperada.getData(),
                         List.of(medicacaoStr)
                 ),
-                pesagemEsperada.getId()
+                pesagemEsperada.getId(),
+                boi
         );
 
         // then
@@ -403,7 +403,8 @@ public class PesagemServiceImplTest {
                         pesagemEsperada.getData(),
                         new ArrayList<String>()
                 ),
-                pesagemEsperada.getId()
+                pesagemEsperada.getId(),
+                boi
         );
 
         // then

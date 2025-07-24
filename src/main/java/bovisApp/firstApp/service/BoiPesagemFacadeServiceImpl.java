@@ -33,7 +33,13 @@ public class BoiPesagemFacadeServiceImpl implements BoiPesagemFacadeService{
 
     @Override
     public Pesagem cadastraPesagem(PesagemRequestDTO pesagemRequestDTO) {
-        // TODO: Implementar e atualizar Service de Pesagem
-        return null;
+        Boi boi = boiService.getBoiById(pesagemRequestDTO.getBoiId());
+        return pesagemService.cadastraPesagem(pesagemRequestDTO, boi);
+    }
+
+    @Override
+    public Pesagem editaPesagem(PesagemRequestDTO pesagemRequestDTO, Long pesagemId) {
+        Boi boi = boiService.getBoiById(pesagemRequestDTO.getBoiId());
+        return pesagemService.editaPesagem(pesagemRequestDTO, pesagemId, boi);
     }
 }
