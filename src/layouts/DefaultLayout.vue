@@ -15,6 +15,12 @@
           title="Visualização dos Bois"
           prepend-icon="mdi-chart-line"
         />
+          <v-list-item
+          link
+          to="/transactions-visualization"
+          title="Visualização dos Transações"
+          prepend-icon="mdi-cash-multiple"
+        />
       </v-list>
     </v-navigation-drawer>
 

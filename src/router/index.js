@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import DefaultLayout from '@/layouts/DefaultLayout.vue';
 import HomeView from '@/views/HomeView.vue';
 import CattleVisualizationView from '@/views/CattleVisualizationView.vue';
+import TransactionVisualizationView from '@/views/TransactionsVisualizationView.vue';
 
 const routes = [
   {
@@ -17,7 +18,13 @@ const routes = [
         path: '/cattle-visualization',
         name: 'CattleVisualization',
         component: CattleVisualizationView,
-      }
+      },
+      {
+        path: '/transactions-visualization',
+        name: 'TransactionsVisualization',
+        component: TransactionVisualizationView,
+      },
+
     ],
   },
 ];

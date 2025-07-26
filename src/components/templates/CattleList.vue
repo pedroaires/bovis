@@ -23,7 +23,7 @@
       ],
       cattle: [],
     };
-    },
+  },
     async created() {
       try {
         const response = await api.getActiveCattleWithWeight();
