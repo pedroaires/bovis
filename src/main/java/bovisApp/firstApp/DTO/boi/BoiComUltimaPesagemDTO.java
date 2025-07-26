@@ -23,14 +23,7 @@ public class BoiComUltimaPesagemDTO {
     }
 
     public static BoiComUltimaPesagemDTO from(Boi boi, Pesagem pesagem) {
-        String data = pesagem != null
-                ? pesagem.getData()
-                .toInstant()
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate()
-                .toString()
-                : null;
-
+        String data = pesagem != null ? pesagem.getData().toString() : null;
         Double peso = pesagem != null ? pesagem.getPeso() : null;
 
         return new BoiComUltimaPesagemDTO(

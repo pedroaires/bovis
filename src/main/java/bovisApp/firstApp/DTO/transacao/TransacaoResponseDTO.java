@@ -6,14 +6,14 @@ import bovisApp.firstApp.model.TransacaoBoi;
 import bovisApp.firstApp.model.enumeration.ModeloTransacao;
 import bovisApp.firstApp.model.enumeration.TransacaoOperacao;
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 public class TransacaoResponseDTO {
 
     private Long id;
     private BigDecimal valor;
-    private Date data;
+    private LocalDate data;
     private String descricao;
     private ModeloTransacao modeloTransacao;
     private TransacaoOperacao operacao;
@@ -21,7 +21,7 @@ public class TransacaoResponseDTO {
     private String contraParte;
     private Transacao transacaoRelacionada;
 
-    public TransacaoResponseDTO(Long id, BigDecimal valor, Date data, String descricao, ModeloTransacao modeloTransacao, TransacaoOperacao operacao, List<Boi> bois, String contraParte, Transacao transacaoRelacionada) {
+    public TransacaoResponseDTO(Long id, BigDecimal valor, LocalDate data, String descricao, ModeloTransacao modeloTransacao, TransacaoOperacao operacao, List<Boi> bois, String contraParte, Transacao transacaoRelacionada) {
         this.id = id;
         this.valor = valor;
         this.data = data;
@@ -36,6 +36,7 @@ public class TransacaoResponseDTO {
     public TransacaoResponseDTO(Transacao transacao) {
         this.id = transacao.getId();
         this.valor = transacao.getValor();
+        this.data = transacao.getData();
         this.descricao = transacao.getDescricao();
         this.modeloTransacao = transacao.getModeloTransacao();
         this.operacao = transacao.getOperacao();
@@ -69,11 +70,11 @@ public class TransacaoResponseDTO {
         this.valor = valor;
     }
 
-    public Date getData() {
+    public LocalDate getData() {
         return data;
     }
 
-    public void setData(Date data) {
+    public void setData(LocalDate data) {
         this.data = data;
     }
 

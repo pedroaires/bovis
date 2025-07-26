@@ -24,11 +24,7 @@ public class BoiComPesagensPorDataDTO {
         this.pesagens = new HashMap<>();
         if (boi.getPesagens() != null) {
             for (Pesagem pesagem : boi.getPesagens()) {
-                String dataStr = pesagem.getData()
-                        .toInstant()
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalDate()
-                        .toString();
+                String dataStr = pesagem.getData().toString();
 
                 pesagens.put(dataStr, new PesagemResponseDTO(pesagem));
             }

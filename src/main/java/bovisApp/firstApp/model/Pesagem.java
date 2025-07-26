@@ -1,6 +1,7 @@
 package bovisApp.firstApp.model;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -13,7 +14,7 @@ public class Pesagem {
     @SequenceGenerator(name = "pesagem_seq_gen", sequenceName = "pesagem_id_seq", allocationSize = 1)
     private Long id;
 
-    private Date data;
+    private LocalDate data;
 
     @ManyToOne
     private Boi boi;
@@ -26,14 +27,14 @@ public class Pesagem {
     private List<Medicacao> medicacoes;
 
 
-    public Pesagem(Date data, Double peso, String descricao, List<Medicacao> medicacoes) {
+    public Pesagem(LocalDate data, Double peso, String descricao, List<Medicacao> medicacoes) {
         this.data = data;
         this.peso = peso;
         this.descricao = descricao;
         this.medicacoes = medicacoes;
     }
 
-    public Pesagem(Boi boi, Date data, Double peso, String descricao, List<Medicacao> medicacoes) {
+    public Pesagem(Boi boi, LocalDate data, Double peso, String descricao, List<Medicacao> medicacoes) {
         this.boi = boi;
         this.data = data;
         this.peso = peso;
@@ -45,11 +46,11 @@ public class Pesagem {
 
     }
 
-    public Date getData() {
+    public LocalDate getData() {
         return data;
     }
 
-    public void setData(Date data) {
+    public void setData(LocalDate data) {
         this.data = data;
     }
 

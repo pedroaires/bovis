@@ -2,6 +2,7 @@ package bovisApp.firstApp.DTO.pesagem;
 
 import bovisApp.firstApp.model.Medicacao;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -10,11 +11,11 @@ public class PesagemRequestDTO {
     private Double peso;
     private String descricao;
 
-    private Date data;
+    private LocalDate data;
 
     private List<String> medicacoes;
 
-    public PesagemRequestDTO(Long boiId, Double peso, String descricao, Date data, List<String> medicacoes) {
+    public PesagemRequestDTO(Long boiId, Double peso, String descricao, LocalDate data, List<String> medicacoes) {
         this.boiId = boiId;
         this.peso = peso;
         this.descricao = descricao;
@@ -46,11 +47,11 @@ public class PesagemRequestDTO {
         this.descricao = descricao;
     }
 
-    public Date getData() {
+    public LocalDate getData() {
         return data;
     }
 
-    public void setData(Date data) {
+    public void setData(LocalDate data) {
         this.data = data;
     }
 
