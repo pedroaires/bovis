@@ -3,7 +3,7 @@ import DefaultLayout from '@/layouts/DefaultLayout.vue';
 import HomeView from '@/views/HomeView.vue';
 import CattleVisualizationView from '@/views/CattleVisualizationView.vue';
 import TransactionVisualizationView from '@/views/TransactionsVisualizationView.vue';
-
+import UploadPurchaseView from '@/views/UploadPurchaseView.vue';
 const routes = [
   {
     path: '/',
@@ -24,6 +24,11 @@ const routes = [
         name: 'TransactionsVisualization',
         component: TransactionVisualizationView,
       },
+      {
+        path: '/upload',
+        name: 'UploadPurchase',
+        component: UploadPurchaseView,
+      }
 
     ],
   },
