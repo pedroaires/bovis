@@ -20,7 +20,13 @@
           to="/transactions-visualization"
           title="Visualização dos Transações"
           prepend-icon="mdi-cash-multiple"
-        />
+          />
+          <v-list-item
+              link
+              to="/upload"
+              title="Upload de Compras"
+              prepend-icon="mdi-upload"
+            />
       </v-list>
     </v-navigation-drawer>
 
@@ -28,6 +34,16 @@
     <v-app-bar>
       <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
       <v-app-bar-title>Application</v-app-bar-title>
+            <!-- Botão de cadastro -->
+      <v-menu>
+        <template #activator="{ props }">
+          <v-btn color="primary" v-bind="props" prepend-icon="mdi-plus">Novo Cadastro</v-btn>
+        </template>
+        <v-list>
+          <v-list-item link to="/upload" title="Cadastro de Compra (Upload)" prepend-icon="mdi-file-upload" />
+          <v-list-item link to="/register-sale" title="Cadastro de Venda" prepend-icon="mdi-cash" />
+        </v-list>
+      </v-menu>
     </v-app-bar>
 
     <!-- Conteúdo principal -->
