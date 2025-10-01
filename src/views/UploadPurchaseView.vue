@@ -2,7 +2,6 @@
   <div class="space-y-4">
     <h1 class="text-h5">Cadastro de Compra (Upload)</h1>
 
-
     <v-btn color="primary" prepend-icon="mdi-file-upload" @click="showUpload = true">
       Selecionar arquivo
     </v-btn>
@@ -18,29 +17,62 @@
     <v-card v-if="previewReady" class="mt-4">
       <v-card-title class="text-h6">
         <v-icon class="mr-2">mdi-eye</v-icon>
-        Pré-visualização dos Dados
+        Pré-visualização
       </v-card-title>
+
       <v-card-text>
         <v-alert v-if="parseError" type="error" class="mb-4" dismissible @click:close="parseError = null">
           {{ parseError }}
         </v-alert>
 
+        <!-- Formulário (campos comuns) -->
+        <v-form ref="formRef" v-model="formValid" class="mb-6">
+          <div class="grid md:grid-cols-3 gap-4">
+            <v-text-field
+              v-model="header.data"
+              label="Data"
+              type="date"
+              :rules="[rules.req]"
+            />
+            <v-text-field
+              v-model="header.fornecedor"
+              label="Fornecedor"
+              :rules="[rules.req]"
+            />
+            <v-text-field
+              v-model="header.valorTotal"
+              label="Valor Total (R$)"
+              inputmode="decimal"
+              :rules="[rules.req, rules.pos]"
+            />
+            <v-text-field
+              v-model="header.descricao"
+              label="Descrição"
+            />
+          </div>
+        </v-form>
+
+        <!-- Tabela (itens/bois) -->
         <div v-if="previewRows.length">
           <PreviewTable
             :data="previewRows"
-            :expected="expectedColumns"
+            :expected="expectedItemColumns"
             :total="totalRows"
-            :editable="[]"            
+            :editable="['numero','raca','pesoNaTransacao','valorUnitario']"
             @update:data="onPreviewEdited"
           />
-
+          <div class="text-caption mt-2">
+            Campos por item: <strong>numero</strong>, <strong>raca</strong>, <strong>pesoNaTransacao</strong>, <strong>valorUnitario</strong>.
+            <em>estadoBoi</em> será enviado como <strong>NA_FAZENDA</strong>.
+          </div>
         </div>
         <div v-else class="text-body-2">Nenhum dado para exibir.</div>
       </v-card-text>
+
       <v-card-actions>
         <v-spacer />
         <v-btn text @click="resetUpload">Trocar arquivo</v-btn>
-        <v-btn color="primary" :disabled="!canConfirm" :loading="uploading" @click="confirmUpload">
+        <v-btn color="primary" :disabled="!canConfirmComputed" :loading="uploading" @click="confirmUpload">
           Confirmar Upload
         </v-btn>
       </v-card-actions>
@@ -62,15 +94,33 @@ import api from '@/services/api'
 const showUpload = ref(false)
 const uploading = ref(false)
 const snackbar = ref({ show: false, text: '' })
-
-const previewRows = ref([])   // []
-const fullData = ref([])      // []
-const totalRows = ref(0)
 const parseError = ref(null)
 
-const expectedColumns = ['data','fornecedor','numero','raca','valor_boi','peso_transacao']
+const previewRows = ref([])
+const fullData = ref([])
+const totalRows = ref(0)
+
+const formRef = ref(null)
+const formValid = ref(false)
+const header = ref({
+  data: '',
+  descricao: '',
+  fornecedor: '',
+  valorTotal: ''
+})
+const rules = {
+  req: v => (!!v || v === 0) || 'Obrigatório',
+  pos: v => (v === '' || Number(v) > 0) || 'Deve ser > 0',
+}
+
+
+const expectedItemColumns = ['numero','raca','pesoNaTransacao','valorUnitario']
 const previewReady = computed(() => parseError.value !== null || fullData.value.length > 0)
-const canConfirm   = computed(() => !parseError.value && fullData.value.length > 0)
+const canConfirmComputed = computed(() =>
+  !parseError.value &&
+  fullData.value.length > 0 &&
+  formValid.value
+)
 
 const onPreviewFile = async (file) => {
   parseError.value = null
@@ -80,8 +130,14 @@ const onPreviewFile = async (file) => {
 
   try {
     const { rows, all } = await parseFileXlsx(file)
-    fullData.value = all
-    previewRows.value = rows
+    const cols = all.length ? Object.keys(all[0]) : []
+    const missing = expectedItemColumns.filter(c => !cols.includes(c))
+    if (missing.length) {
+      throw new Error(`Colunas ausentes no arquivo: ${missing.join(', ')}`)
+    }
+
+    fullData.value = all                 
+    previewRows.value = rows.slice(0, 100)
     totalRows.value = all.length
     showUpload.value = false
   } catch (e) {
@@ -97,28 +153,80 @@ async function parseFileXlsx(file) {
   const sheetName = wb.SheetNames?.[0]
   if (!sheetName) return { rows: [], all: [] }
   const ws = wb.Sheets[sheetName]
-  const json = XLSX.utils.sheet_to_json(ws, { defval: '' }) // Array<Object>
+  const json = XLSX.utils.sheet_to_json(ws, { defval: '' })
   const norm = json.map(normalizeKeys)
   return { rows: norm.slice(0, 100), all: norm }
 }
-
 function normalizeKeys(row) {
   const out = {}
   for (const k of Object.keys(row)) out[String(k).trim()] = row[k]
   return out
 }
 
+function onPreviewEdited(editedPreview) {
+  previewRows.value = editedPreview
+  for (let i = 0; i < editedPreview.length; i++) {
+    if (!fullData.value[i]) fullData.value[i] = {}
+    Object.assign(fullData.value[i], editedPreview[i])
+  }
+}
+
 const confirmUpload = async () => {
+  // valida o formulário antes
+  const ok = await formRef.value?.validate()
+  if (!ok?.valid) return
+
   try {
     uploading.value = true
-    await api.post('/purchases/upload', { rows: fullData.value })
+
+
+    const compraBoiDTOS = fullData.value.map(it => ({
+      boiRequestDTO: {
+        numero: intOrNull(it.numero),
+        raca: (it.raca ?? '').trim(),
+        estadoBoi: 'NA_FAZENDA',
+      },
+      valor: numOrNull(it.valorUnitario),        
+      pesoNaTransacao: numOrNull(it.pesoNaTransacao),
+    }))
+
+    // total da transação (use o do formulário; se vier vazio, soma os itens)
+    const total =
+      header.value.valorTotal !== ''
+        ? numOrNull(header.value.valorTotal)
+        : compraBoiDTOS.reduce((acc, x) => acc + (x.valor ?? 0), 0)
+
+    const payload = {
+      valor: total,                                
+      data: String(header.value.data).slice(0, 10),
+      descricao: header.value.descricao ?? '',
+      modeloTransacao: 'PESO',
+      contraParte: header.value.fornecedor ?? '',
+      compraBoiDTOS,                               
+    }
+    
+    console.log(payload);
+    api.createCompra(payload)
     snackbar.value = { show: true, text: 'Upload realizado com sucesso.' }
     resetUpload(true)
-  } catch {
+  } catch (e) {
+    console.error('createCompra error:', e?.response?.data || e)
     snackbar.value = { show: true, text: 'Falha no upload. Verifique os dados.' }
   } finally {
     uploading.value = false
   }
+}
+
+function numOrNull(v) {
+  if (v === null || v === undefined || v === '') return null
+  const n = Number(String(v).replace(',', '.'))
+  return Number.isFinite(n) ? n : null
+}
+
+function intOrNull(v) {
+  if (v === null || v === undefined || v === '') return null
+  const n = parseInt(String(v).trim(), 10)
+  return Number.isFinite(n) ? n : null
 }
 
 const resetUpload = (clear = false) => {
@@ -126,6 +234,7 @@ const resetUpload = (clear = false) => {
     fullData.value = []
     previewRows.value = []
     totalRows.value = 0
+    header.value = { data: '', descricao: '', fornecedor: '', valorTotal: '' }
   }
   parseError.value = null
   showUpload.value = true
@@ -133,27 +242,15 @@ const resetUpload = (clear = false) => {
 
 const onDownloadTemplate = () => {
   const csv = [
-    'data,fornecedor,numero,raca,valor_boi,peso_transacao',
-    '2025-09-01,Fornecedor Exemplo,12345,Nelore,3500.00,450.0',
+    'numero,raca,pesoNaTransacao,valorUnitario',
+    '12345,Nelore,450.0,3500.00',
   ].join('\n')
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = 'template_compra.csv'
+  a.download = 'template_itens_compra.csv'
   a.click()
   URL.revokeObjectURL(url)
 }
-function onPreviewEdited(editedPreview) {
-  // atualiza a prévia
-  previewRows.value = editedPreview
-
-  // propaga para o dataset completo nas mesmas linhas da prévia
-  for (let i = 0; i < editedPreview.length; i++) {
-    // garante objeto existente
-    if (!fullData.value[i]) fullData.value[i] = {}
-    Object.assign(fullData.value[i], editedPreview[i])
-  }
-}
-
 </script>
