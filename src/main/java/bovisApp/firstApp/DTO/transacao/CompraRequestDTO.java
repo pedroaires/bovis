@@ -22,4 +22,11 @@ public class CompraRequestDTO extends TransacaoRequestDTO{
     public void setCompraBoiDTOS(List<CompraBoiDTO> compraBoiDTOS) {
         this.compraBoiDTOS = compraBoiDTOS;
     }
+
+    @Override
+    public String toString() {
+        return "CompraRequestDTO{" +
+                "compraBoiDTOS=" + compraBoiDTOS +
+                '}';
+    }
 }

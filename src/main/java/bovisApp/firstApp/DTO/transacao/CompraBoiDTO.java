@@ -41,4 +41,13 @@ public class CompraBoiDTO {
     public void setPesoNaTransacao(Double pesoNaTransacao) {
         this.pesoNaTransacao = pesoNaTransacao;
     }
+
+    @Override
+    public String toString() {
+        return "CompraBoiDTO{" +
+                "boiRequestDTO=" + boiRequestDTO +
+                ", valor=" + valor +
+                ", pesoNaTransacao=" + pesoNaTransacao +
+                '}';
+    }
 }

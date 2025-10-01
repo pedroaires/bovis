@@ -53,4 +53,13 @@ public class BoiRequestDTO {
     public int hashCode() {
         return Objects.hash(numero, raca, estadoBoi);
     }
+
+    @Override
+    public String toString() {
+        return "BoiRequestDTO{" +
+                "numero=" + numero +
+                ", raca='" + raca + '\'' +
+                ", estadoBoi='" + estadoBoi + '\'' +
+                '}';
+    }
 }
