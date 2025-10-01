@@ -3,6 +3,7 @@ package bovisApp.firstApp.model;
 import bovisApp.firstApp.model.enumeration.EstadoBoi;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -20,7 +21,7 @@ public class Boi {
     @JoinColumn(name = "raca_id", nullable = false)
     private Raca raca;
     @OneToMany(mappedBy = "boi", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<TransacaoBoi> transacaoBois;
+    private List<TransacaoBoi> transacaoBois = new ArrayList<>();
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
@@ -85,6 +86,16 @@ public class Boi {
         this.transacaoBois = transacaoBois;
     }
 
+    public void addTransacaoBoi(TransacaoBoi transacaoBoi){
+        if (this.transacaoBois == null) this.transacaoBois = new ArrayList<>();
+        this.transacaoBois.add(transacaoBoi);
+        transacaoBoi.setBoi(this);
+    }
+
+    public void removeTransacaoBoi(TransacaoBoi transacaoBoi){
+        if (this.transacaoBois != null) this.transacaoBois.remove(transacaoBoi);
+        transacaoBoi.setBoi(null);
+    }
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

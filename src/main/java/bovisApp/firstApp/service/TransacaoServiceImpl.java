@@ -73,11 +73,10 @@ public class TransacaoServiceImpl implements TransacaoService{
             Boi boi = boisComprados.get(i);
             TransacaoBoi transacaoBoi = new TransacaoBoi();
 
-            transacaoBoi.setBoi(boi);
             transacaoBoi.setPeso(dto.getPesoNaTransacao());
             transacaoBoi.setValor(dto.getValor());
 
-            boi.getTransacaoBois().add(transacaoBoi);
+            boi.addTransacaoBoi(transacaoBoi);
 
             transacaoBois.add(transacaoBoi);
         }
@@ -91,13 +90,10 @@ public class TransacaoServiceImpl implements TransacaoService{
             VendaBoiDTO dto = vendaBoiDTOS.get(i);
             Boi boi = boisVendidos.get(i);
             TransacaoBoi transacaoBoi = new TransacaoBoi();
-
-            transacaoBoi.setBoi(boi);
             transacaoBoi.setPeso(dto.getPesoNaTransacao());
             transacaoBoi.setValor(dto.getValor());
 
-            boi.getTransacaoBois().add(transacaoBoi);
-
+            boi.addTransacaoBoi(transacaoBoi);
             transacaoBois.add(transacaoBoi);
         }
         return transacaoBois;
