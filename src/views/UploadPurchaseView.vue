@@ -1,3 +1,4 @@
+<!-- src/views/UploadPurchaseView.vue -->
 <template>
   <div class="space-y-4">
     <h1 class="text-h5">Cadastro de Compra (Upload)</h1>
@@ -26,31 +27,13 @@
         </v-alert>
 
         <!-- Formulário (campos comuns) -->
-        <v-form ref="formRef" v-model="formValid" class="mb-6">
-          <div class="grid md:grid-cols-3 gap-4">
-            <v-text-field
-              v-model="header.data"
-              label="Data"
-              type="date"
-              :rules="[rules.req]"
-            />
-            <v-text-field
-              v-model="header.fornecedor"
-              label="Fornecedor"
-              :rules="[rules.req]"
-            />
-            <v-text-field
-              v-model="header.valorTotal"
-              label="Valor Total (R$)"
-              inputmode="decimal"
-              :rules="[rules.req, rules.pos]"
-            />
-            <v-text-field
-              v-model="header.descricao"
-              label="Descrição"
-            />
-          </div>
-        </v-form>
+        <TransacaoForm
+          ref="txFormRef"
+          v-model="form"
+          :contra-parte-label="'Fornecedor'"
+          :mostrar-modelo-transacao="false"
+          :rules="rules"
+        />
 
         <!-- Tabela (itens/bois) -->
         <div v-if="previewRows.length">
@@ -89,37 +72,38 @@ import { ref, computed } from 'vue'
 import * as XLSX from 'xlsx'
 import UploadDialog from '@/components/organisms/UploadDialog.vue'
 import PreviewTable from '@/components/molecules/EditableTable.vue'
+import TransacaoForm from '@/components/molecules/TransacaoForm.vue'
 import api from '@/services/api'
 
+// UI/estado
 const showUpload = ref(false)
 const uploading = ref(false)
 const snackbar = ref({ show: false, text: '' })
 const parseError = ref(null)
 
+// preview
 const previewRows = ref([])
 const fullData = ref([])
 const totalRows = ref(0)
 
-const formRef = ref(null)
-const formValid = ref(false)
-const header = ref({
+// formulário (via TransacaoForm)
+const txFormRef = ref(null)
+const form = ref({
   data: '',
   descricao: '',
-  fornecedor: '',
-  valorTotal: ''
+  modeloTransacao: 'PESO',
+  contraParte: '',   // Fornecedor
+  valorTotal: '',
 })
 const rules = {
   req: v => (!!v || v === 0) || 'Obrigatório',
   pos: v => (v === '' || Number(v) > 0) || 'Deve ser > 0',
 }
 
-
 const expectedItemColumns = ['numero','raca','pesoNaTransacao','valorUnitario']
 const previewReady = computed(() => parseError.value !== null || fullData.value.length > 0)
 const canConfirmComputed = computed(() =>
-  !parseError.value &&
-  fullData.value.length > 0 &&
-  formValid.value
+  !parseError.value && fullData.value.length > 0
 )
 
 const onPreviewFile = async (file) => {
@@ -136,7 +120,7 @@ const onPreviewFile = async (file) => {
       throw new Error(`Colunas ausentes no arquivo: ${missing.join(', ')}`)
     }
 
-    fullData.value = all                 
+    fullData.value = all
     previewRows.value = rows.slice(0, 100)
     totalRows.value = all.length
     showUpload.value = false
@@ -172,13 +156,12 @@ function onPreviewEdited(editedPreview) {
 }
 
 const confirmUpload = async () => {
-  // valida o formulário antes
-  const ok = await formRef.value?.validate()
-  if (!ok?.valid) return
+  // valida o TransacaoForm
+  const ok = await txFormRef.value?.validate()
+  if (!ok) return
 
   try {
     uploading.value = true
-
 
     const compraBoiDTOS = fullData.value.map(it => ({
       boiRequestDTO: {
@@ -186,27 +169,25 @@ const confirmUpload = async () => {
         raca: (it.raca ?? '').trim(),
         estadoBoi: 'NA_FAZENDA',
       },
-      valor: numOrNull(it.valorUnitario),        
+      valor: numOrNull(it.valorUnitario),
       pesoNaTransacao: numOrNull(it.pesoNaTransacao),
     }))
 
-    // total da transação (use o do formulário; se vier vazio, soma os itens)
     const total =
-      header.value.valorTotal !== ''
-        ? numOrNull(header.value.valorTotal)
+      form.value.valorTotal !== ''
+        ? numOrNull(form.value.valorTotal)
         : compraBoiDTOS.reduce((acc, x) => acc + (x.valor ?? 0), 0)
 
     const payload = {
-      valor: total,                                
-      data: String(header.value.data).slice(0, 10),
-      descricao: header.value.descricao ?? '',
-      modeloTransacao: 'PESO',
-      contraParte: header.value.fornecedor ?? '',
-      compraBoiDTOS,                               
+      valor: total,
+      data: String(form.value.data).slice(0, 10),
+      descricao: form.value.descricao ?? '',
+      modeloTransacao: form.value.modeloTransacao,
+      contraParte: form.value.contraParte ?? '', // Fornecedor
+      compraBoiDTOS,
     }
-    
-    console.log(payload);
-    api.createCompra(payload)
+
+    await api.createCompra(payload)
     snackbar.value = { show: true, text: 'Upload realizado com sucesso.' }
     resetUpload(true)
   } catch (e) {
@@ -234,7 +215,7 @@ const resetUpload = (clear = false) => {
     fullData.value = []
     previewRows.value = []
     totalRows.value = 0
-    header.value = { data: '', descricao: '', fornecedor: '', valorTotal: '' }
+    form.value = { data: '', descricao: '', modeloTransacao: 'PESO', contraParte: '', valorTotal: '' }
   }
   parseError.value = null
   showUpload.value = true

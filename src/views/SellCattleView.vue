@@ -46,34 +46,12 @@
                 {{ errorMsg }}
               </v-alert>
 
-              <v-form ref="formRef" v-model="formValid">
-                <div class="grid md:grid-cols-3 gap-4">
-                  <v-text-field
-                    v-model="form.data"
-                    label="Data"
-                    type="date"
-                    :rules="[rules.req]"
-                  />
-                  <v-text-field
-                    v-model="form.contraParte"
-                    label="Comprador"
-                    :rules="[rules.req]"
-                  />
-                  <v-text-field
-                    v-model="form.valorTotal"
-                    label="Valor Total (R$)"
-                    inputmode="decimal"
-                    :rules="[rules.req, rules.pos]"
-                    hint="Se vazio, soma os itens"
-                    persistent-hint
-                  />
-                  <v-text-field
-                    v-model="form.descricao"
-                    label="Descrição"
-                    class="md:col-span-3"
-                  />
-                </div>
-              </v-form>
+              <TransacaoForm
+                ref="txFormRef"
+                v-model="form"
+                :contra-parte-label="'Comprador'"
+                :mostrar-modelo-transacao="false"
+              />
 
               <div class="mt-6">
                 <div class="text-subtitle-2 mb-2">
@@ -144,17 +122,17 @@
 import { ref, computed, onMounted } from 'vue'
 import CattleList from '@/components/templates/CattleList.vue'
 import api from '@/services/api.js'
+import TransacaoForm from '@/components/molecules/TransacaoForm.vue'
 
 const step = ref(1)
 const loading = ref(false)
 const cattle = ref([])
 const selected = ref([])
 
-const formRef = ref(null)
-const formValid = ref(false)
 const submitting = ref(false)
 const snackbar = ref({ show: false, text: '' })
 const errorMsg = ref('')
+const sellItems = ref([])
 
 const form = ref({
   data: '',
@@ -164,10 +142,7 @@ const form = ref({
   valorTotal: '',
 })
 
-const rules = {
-  req: v => (!!v || v === 0) || 'Obrigatório',
-  pos: v => (v === '' || Number(String(v).replace(',', '.')) > 0) || 'Deve ser > 0',
-}
+const txFormRef = ref(null)
 
 const itemHeaders = [
   { title: 'ID', key: 'boiId' },
@@ -177,7 +152,6 @@ const itemHeaders = [
   { title: 'Peso na Transação (kg)', key: 'pesoNaTransacao' },
 ]
 
-const sellItems = ref([])
 
 onMounted(async () => {
   await fetchCattle()
@@ -198,11 +172,7 @@ async function fetchCattle() {
 
 function toStep2() {
   const sel = Array.isArray(selected.value) ? selected.value.filter(Boolean) : []
-
-  // índice por id para lookup rápido
   const byId = new Map(cattle.value.map(x => [x.id, x]))
-
-  // aceita objeto (com id) ou id “puro”
   sellItems.value = sel.map(s => {
     const c = (typeof s === 'object' && s !== null) ? s : byId.get(s)
     if (!c) return null
@@ -245,13 +215,11 @@ const sumItems = computed(() =>
 )
 const sumItemsFormatted = computed(() => sumItems.value.toFixed(2))
 
-const canSubmit = computed(() =>
-  sellItems.value.length > 0 && formValid.value
-)
+const canSubmit = computed(() => sellItems.value.length > 0)
 
 async function submitVenda() {
-  const ok = await formRef.value?.validate()
-  if (!ok?.valid) return
+  const ok = await txFormRef.value?.validate()
+  if (!ok) return
 
   try {
     submitting.value = true
