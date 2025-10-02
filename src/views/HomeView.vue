@@ -32,7 +32,13 @@
       <v-col cols="12">
         <v-card class="pa-4">
           <v-card-text>
-            <CattleList />
+             <CattleList
+              title="Lista de Gado"
+              :items="cattle"
+              :loading="loading"
+              :enable-search="true"
+              :selectable="false"
+              />
           </v-card-text>
         </v-card>
       </v-col>
@@ -41,5 +47,20 @@
 </template>
 
 <script setup>
-import CattleList from '@/components/templates/CattleList.vue';
+import { ref, onMounted } from 'vue'
+import CattleList from '@/components/templates/CattleList.vue'
+import api from '@/services/api.js'
+
+const loading = ref(false)
+const cattle = ref([])
+
+onMounted(async () => {
+  loading.value = true
+  try {
+    const resp = await api.getActiveCattleWithWeight()
+    cattle.value = resp.data ?? []
+  } finally {
+    loading.value = false
+  }
+})
 </script>
