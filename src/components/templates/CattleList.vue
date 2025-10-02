@@ -17,10 +17,11 @@
       :items="filteredItems"
       :search="enableSearch ? search : undefined"
       :loading="loading"
-      item-key="id"
+      item-value="id"
       :show-select="selectable"
-      v-model:selected="internalSelected"
+      v-model="internalSelected"
       :items-per-page="itemsPerPage"
+      :return-object="true"
     >
       <!-- célula customizada: estado -->
       <template #[`item.${estadoKey}`]="{ item }">

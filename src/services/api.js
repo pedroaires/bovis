@@ -22,5 +22,8 @@ export default {
   },
   async createCompra(compraRequest) {
     return apiClient.post('/transacao/cadastraCompra', compraRequest)
+  },
+  async createVenda(vendaRequest) {
+    return apiClient.post('/transacao/cadastraVenda', vendaRequest)
   }
 };

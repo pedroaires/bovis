@@ -23,9 +23,15 @@
           />
           <v-list-item
               link
-              to="/upload"
-              title="Upload de Compras"
-              prepend-icon="mdi-upload"
+              to="/register-purchase"
+              title="Cadastro de Compras"
+              prepend-icon="mdi-basket-plus"
+            />
+            <v-list-item
+              link
+              to="/register-sale"
+              title="Cadastro de vendas"
+              prepend-icon="mdi-cash-register"
             />
       </v-list>
     </v-navigation-drawer>
@@ -33,15 +39,15 @@
     <!-- Barra de navegação superior -->
     <v-app-bar>
       <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
-      <v-app-bar-title>Application</v-app-bar-title>
+      <v-app-bar-title>BovisApp</v-app-bar-title>
             <!-- Botão de cadastro -->
       <v-menu>
         <template #activator="{ props }">
           <v-btn color="primary" v-bind="props" prepend-icon="mdi-plus">Novo Cadastro</v-btn>
         </template>
         <v-list>
-          <v-list-item link to="/upload" title="Cadastro de Compra (Upload)" prepend-icon="mdi-file-upload" />
-          <v-list-item link to="/register-sale" title="Cadastro de Venda" prepend-icon="mdi-cash" />
+          <v-list-item link to="/register-purchase" title="Cadastro de Compra" prepend-icon="mdi-basket-plus" />
+          <v-list-item link to="/register-sale" title="Cadastro de Venda" prepend-icon="mdi-cash-register" />
         </v-list>
       </v-menu>
     </v-app-bar>
