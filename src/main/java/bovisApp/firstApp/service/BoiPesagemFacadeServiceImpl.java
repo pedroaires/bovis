@@ -9,6 +9,7 @@ import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,11 +24,11 @@ public class BoiPesagemFacadeServiceImpl implements BoiPesagemFacadeService{
     }
 
     @Override
-    public List<Pair<Boi, Pesagem>> getBoisAtivosComUltimaPesagem() {
+    public List<Pair<Boi, Optional<Pesagem>>> getBoisAtivosComUltimaPesagem() {
 
         return boiService.getBoisByEstado(EstadoBoi.NA_FAZENDA).stream()
                 .map(
-                        boi -> Pair.of(boi, pesagemService.getUltimaPesagemPorBoiId(boi.getId()).orElse(null))
+                        boi -> Pair.of(boi, pesagemService.getUltimaPesagemPorBoiId(boi.getId()))
                 ).collect(Collectors.toList());
     }
 

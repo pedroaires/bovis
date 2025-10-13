@@ -4,6 +4,7 @@ import bovisApp.firstApp.model.Boi;
 import bovisApp.firstApp.model.Pesagem;
 
 import java.time.ZoneId;
+import java.util.Optional;
 
 public class BoiComUltimaPesagemDTO {
     private Long id;
@@ -22,9 +23,9 @@ public class BoiComUltimaPesagemDTO {
         this.peso = peso;
     }
 
-    public static BoiComUltimaPesagemDTO from(Boi boi, Pesagem pesagem) {
-        String data = pesagem != null ? pesagem.getData().toString() : null;
-        Double peso = pesagem != null ? pesagem.getPeso() : null;
+    public static BoiComUltimaPesagemDTO from(Boi boi, Optional<Pesagem> pesagemOptional) {
+        String data = pesagemOptional.map(p -> p.getData().toString()).orElse(null);
+        Double peso = pesagemOptional.map(Pesagem::getPeso).orElse(null);
 
         return new BoiComUltimaPesagemDTO(
                 boi.getId(),

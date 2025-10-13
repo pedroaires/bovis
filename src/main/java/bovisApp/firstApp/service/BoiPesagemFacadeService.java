@@ -6,9 +6,10 @@ import bovisApp.firstApp.model.Pesagem;
 import org.springframework.data.util.Pair;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface BoiPesagemFacadeService {
-    List<Pair<Boi, Pesagem>> getBoisAtivosComUltimaPesagem();
+    List<Pair<Boi, Optional<Pesagem>>> getBoisAtivosComUltimaPesagem();
 
     Pesagem cadastraPesagem(PesagemRequestDTO pesagemRequestDTO);
 
