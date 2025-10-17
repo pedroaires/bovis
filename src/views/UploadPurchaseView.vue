@@ -49,11 +49,11 @@
                       :data="previewRows"
                       :expected="expectedItemColumns"
                       :total="totalRows"
-                      :editable="['numero','raca','pesoNaTransacao','valorUnitario']"
+                      :editable="['numero','raca','peso','valorUnitario']"
                       @update:data="onPreviewEdited"
                     />
                     <div class="text-caption mt-2">
-                      Campos por item: <b>numero</b>, <b>raca</b>, <b>pesoNaTransacao</b>, <b>valorUnitario</b>.
+                      Campos por item: <b>numero</b>, <b>raca</b>, <b>peso</b>, <b>valorUnitario</b>.
                       <em>estadoBoi</em> será enviado como <b>NA_FAZENDA</b>.
                     </div>
                   </div>
@@ -96,7 +96,7 @@
                   :data="previewRows"
                   :expected="expectedItemColumns"
                   :total="totalRows"
-                  :editable="['numero','raca','pesoNaTransacao','valorUnitario']"
+                  :editable="['numero','raca','peso','valorUnitario']"
                   @update:data="onPreviewEdited"
                 />
 
@@ -164,7 +164,7 @@ const rules = {
 }
 
 // Colunas esperadas
-const expectedItemColumns = ['numero','raca','pesoNaTransacao','valorUnitario']
+const expectedItemColumns = ['numero','raca','peso','valorUnitario']
 
 // Estados computados
 const previewReady = computed(() => parseError.value !== null || fullData.value.length > 0)
@@ -246,7 +246,9 @@ const confirmUpload = async () => {
         estadoBoi: 'NA_FAZENDA',
       },
       valor: numOrNull(it.valorUnitario),
-      pesoNaTransacao: numOrNull(it.pesoNaTransacao),
+      pesagemDTO: {
+        peso: it.peso
+      }
     }))
 
     const total =
@@ -262,6 +264,7 @@ const confirmUpload = async () => {
       contraParte: form.value.contraParte ?? '', // Fornecedor
       compraBoiDTOS,
     }
+    console.log(payload);
 
     await api.createCompra(payload)
     snackbar.value = { show: true, text: 'Upload realizado com sucesso.' }
@@ -295,7 +298,7 @@ function resetAll() {
 }
 const onDownloadTemplate = () => {
   const csv = [
-    'numero,raca,pesoNaTransacao,valorUnitario',
+    'numero,raca,peso,valorUnitario',
     '12345,Nelore,450.0,3500.00',
   ].join('\n')
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })

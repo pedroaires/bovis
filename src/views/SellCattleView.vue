@@ -74,7 +74,7 @@
                     />
                   </template>
 
-                  <template #[`item.pesoNaTransacao`]="{ item }">
+                  <template #[`item.peso`]="{ item }">
                     <v-text-field
                       v-model="item.pesoStr"
                       density="compact"
@@ -148,7 +148,7 @@ const itemHeaders = [
   { title: 'Número', key: 'numero' },
   { title: 'Raça', key: 'raca' },
   { title: 'Valor (R$)', key: 'valor' },
-  { title: 'Peso na Transação (kg)', key: 'pesoNaTransacao' },
+  { title: 'Peso na Transação (kg)', key: 'peso' },
 ]
 
 
@@ -179,7 +179,7 @@ function toStep2() {
       numero: c.numero,
       raca: c.raca,
       valor: null,
-      pesoNaTransacao: c.peso ?? null,
+      peso: c.peso ?? null,
       valorStr: '',
       pesoStr: c.peso != null ? String(c.peso) : '',
     }
@@ -204,8 +204,8 @@ function normalizeValor(item) {
 }
 
 function normalizePeso(item) {
-  item.pesoNaTransacao = parseDecimal(item.pesoStr)
-  item.pesoStr = item.pesoNaTransacao != null ? String(item.pesoNaTransacao) : ''
+  item.peso = parseDecimal(item.pesoStr)
+  item.pesoStr = item.peso != null ? String(item.peso) : ''
 }
 
 const sumItems = computed(() =>
@@ -230,7 +230,9 @@ async function submitVenda() {
     const vendaBoiDTOS = sellItems.value.map(it => ({
       boiId: it.boiId,
       valor: it.valor,
-      pesoNaTransacao: it.pesoNaTransacao,
+      pesagemDTO: {
+        peso: it.peso
+      },
     }))
 
     const payload = {
