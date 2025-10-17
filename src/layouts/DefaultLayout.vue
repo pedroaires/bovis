@@ -33,6 +33,12 @@
               title="Cadastro de vendas"
               prepend-icon="mdi-cash-register"
             />
+            <v-list-item 
+              link 
+              to="/register-weighing" 
+              title="Registrar Pesagem" 
+              prepend-icon="mdi-weight-kilogram"
+              />
       </v-list>
     </v-navigation-drawer>
 
