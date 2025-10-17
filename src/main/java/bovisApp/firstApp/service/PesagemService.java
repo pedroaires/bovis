@@ -16,13 +16,15 @@ public interface PesagemService {
 
     List<Pesagem> getPesagemByBoiId(Long boiId);
 
-    Pesagem cadastraPesagem(PesagemRequestDTO pesagemRequestDTO, Boi boi);
+    Pesagem cadastraPesagem(PesagemRequestDTO pesagemRequestDTO);
 
     Pesagem deletaPesagem(Long id);
 
     Pesagem criarPesagemParaTransacao(Boi boi, PesagemTransacaoRequestDTO dto, LocalDate dataTransacao);
 
-    Pesagem editaPesagem(PesagemRequestDTO pesagemRequestDTO, Long pesagemId, Boi boi);
+    Pesagem editaPesagem(PesagemRequestDTO pesagemRequestDTO, Long pesagemId);
 
     Optional<Pesagem> getUltimaPesagemPorBoiId(Long boiId);
+
+    List<Pesagem> cadastraLotePesagem(List<PesagemRequestDTO> pesagens);
 }

@@ -1,5 +1,6 @@
 package bovisApp.firstApp.controller;
 
+import bovisApp.firstApp.DTO.pesagem.LotePesagemRequestDTO;
 import bovisApp.firstApp.DTO.pesagem.PesagemRequestDTO;
 import bovisApp.firstApp.DTO.pesagem.PesagemResponseDTO;
 import bovisApp.firstApp.model.Pesagem;
@@ -18,12 +19,10 @@ import java.util.stream.Collectors;
 @RequestMapping(path = "/api/pesagem")
 public class PesagemAPIController {
     private final PesagemService pesagemService;
-    private final BoiPesagemFacadeService boiPesagemFacadeService;
 
     @Autowired
-    public PesagemAPIController(PesagemService pesagemService, BoiPesagemFacadeService boiPesagemFacadeService) {
+    public PesagemAPIController(PesagemService pesagemService) {
         this.pesagemService = pesagemService;
-        this.boiPesagemFacadeService = boiPesagemFacadeService;
     }
 
     @GetMapping(value = "/listPesagens")
@@ -40,13 +39,23 @@ public class PesagemAPIController {
 
     @PostMapping(value = "/cadastraPesagem")
     public PesagemResponseDTO cadastraPesagem(PesagemRequestDTO pesagemRequestDTO){
-        PesagemResponseDTO pesagemResponseDTO = new PesagemResponseDTO(boiPesagemFacadeService.cadastraPesagem(pesagemRequestDTO));
+        PesagemResponseDTO pesagemResponseDTO = new PesagemResponseDTO(pesagemService.cadastraPesagem(pesagemRequestDTO));
         return pesagemResponseDTO;
+    }
+    @PostMapping(value = "/cadastraLotePesagem")
+    public List<PesagemResponseDTO> cadastraLotePesagem(@RequestBody LotePesagemRequestDTO loteRequest) {
+
+
+        List<Pesagem> pesagensSalvas = pesagemService.cadastraLotePesagem(loteRequest.getPesagens());
+
+        return pesagensSalvas.stream()
+                .map(PesagemResponseDTO::new)
+                .collect(Collectors.toList());
     }
 
     @PutMapping(value = "/editaPesagem")
     public PesagemResponseDTO editaPesagem(PesagemRequestDTO pesagemRequestDTO, Long pesagemId){
-        PesagemResponseDTO pesagemResponseDTO = new PesagemResponseDTO(boiPesagemFacadeService.editaPesagem(pesagemRequestDTO, pesagemId));
+        PesagemResponseDTO pesagemResponseDTO = new PesagemResponseDTO(pesagemService.editaPesagem(pesagemRequestDTO, pesagemId));
         return pesagemResponseDTO;
     }
 

@@ -1,10 +1,7 @@
 package bovisApp.firstApp.DTO.pesagem;
 
-import bovisApp.firstApp.model.Medicacao;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 
 public class PesagemRequestDTO {

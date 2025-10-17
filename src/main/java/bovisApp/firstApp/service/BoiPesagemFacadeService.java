@@ -11,7 +11,4 @@ import java.util.Optional;
 public interface BoiPesagemFacadeService {
     List<Pair<Boi, Optional<Pesagem>>> getBoisAtivosComUltimaPesagem();
 
-    Pesagem cadastraPesagem(PesagemRequestDTO pesagemRequestDTO);
-
-    Pesagem editaPesagem(PesagemRequestDTO pesagemRequestDTO, Long pesagemId);
 }

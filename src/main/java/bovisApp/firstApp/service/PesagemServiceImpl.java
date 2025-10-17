@@ -13,10 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,10 +22,13 @@ public class PesagemServiceImpl implements PesagemService{
 
     private final MedicacaoService medicacaoService;
 
+    private final BoiService boiService;
+
     @Autowired
-    public PesagemServiceImpl(PesagemRepository pesagemRepository, MedicacaoService medicacaoService) {
+    public PesagemServiceImpl(PesagemRepository pesagemRepository, MedicacaoService medicacaoService, BoiService boiService) {
         this.pesagemRepository = pesagemRepository;
         this.medicacaoService = medicacaoService;
+        this.boiService = boiService;
     }
     @Override
     public Pesagem getPesagemById(Long id){
@@ -50,8 +50,9 @@ public class PesagemServiceImpl implements PesagemService{
     }
 
     @Override
-    public Pesagem cadastraPesagem(PesagemRequestDTO dto, Boi boi) {
+    public Pesagem cadastraPesagem(PesagemRequestDTO dto) {
         validaPesagemDTO(dto);
+        Boi boi = boiService.getBoiById(dto.getBoiId());
 
         String descricao = Optional.ofNullable(dto.getDescricao()).orElse("");
         List<String> medicacoesStr = Optional.ofNullable(dto.getMedicacoes()).orElse(Collections.emptyList());
@@ -77,6 +78,9 @@ public class PesagemServiceImpl implements PesagemService{
         if(dataTransacao == null){
             throw new PesagemInvalidaException("Data da pesagem não pode ser nula");
         }
+        if(dto.getPeso() == null){
+            throw new PesagemInvalidaException("Peso não pode ser nulo");
+        }
         DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         String descricao = "Pesagem registrada na transação. (" + dataTransacao.format(formatador) + ")";
         Pesagem pesagem = new Pesagem(
@@ -91,9 +95,12 @@ public class PesagemServiceImpl implements PesagemService{
 
 
     @Override
-    public Pesagem editaPesagem(PesagemRequestDTO dto, Long pesagemId, Boi boi) {
-        Pesagem pesagem = getPesagemById(pesagemId);
+    public Pesagem editaPesagem(PesagemRequestDTO dto, Long pesagemId) {
         validaPesagemDTO(dto);
+
+        Boi boi = boiService.getBoiById(dto.getBoiId());
+        Pesagem pesagem = getPesagemById(pesagemId);
+
         String descricao = Optional.ofNullable(dto.getDescricao()).orElse("");
         List<String> medicacoesStr = Optional.ofNullable(dto.getMedicacoes()).orElse(Collections.emptyList());
         List<Medicacao> medicacoes = medicacoesStr.stream().map(medicacaoService::getOrCreateMedicacao).collect(Collectors.toList());
@@ -110,6 +117,19 @@ public class PesagemServiceImpl implements PesagemService{
     public Optional<Pesagem> getUltimaPesagemPorBoiId(Long boiId) {
         List<Pesagem> pesagens = getPesagemByBoiId(boiId);
         return pesagens.stream().max(Comparator.comparing(Pesagem::getData));
+    }
+
+    @Override
+    public List<Pesagem> cadastraLotePesagem(List<PesagemRequestDTO> dtos) {
+        if (dtos == null || dtos.isEmpty()){
+            throw new PesagemInvalidaException("Dados de pesagem nulos ou vazios");
+        }
+        List<Pesagem> pesagens = new ArrayList<>();
+        for(PesagemRequestDTO dto : dtos){
+            pesagens.add(cadastraPesagem(dto));
+
+        }
+        return pesagens;
     }
 
     public void validaPesagemDTO(PesagemRequestDTO dto){

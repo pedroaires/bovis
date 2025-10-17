@@ -32,6 +32,9 @@ public class PesagemServiceImplTest {
     @Mock
     private MedicacaoService medicacaoService;
 
+    @Mock
+    private BoiService boiService;
+
     private Date gerarDataAleatoria() {
         return new Date((long) (Math.random() * 1000000000));
     }
@@ -58,7 +61,7 @@ public class PesagemServiceImplTest {
     }
     @BeforeEach
     void setUp(){
-        pesagemService_underTest = new PesagemServiceImpl(pesagemRepository, medicacaoService);
+        pesagemService_underTest = new PesagemServiceImpl(pesagemRepository, medicacaoService, boiService);
     }
 
     @Test
