@@ -1,21 +1,23 @@
 package bovisApp.firstApp.DTO.transacao;
 
 import bovisApp.firstApp.DTO.boi.BoiRequestDTO;
+import bovisApp.firstApp.DTO.pesagem.PesagemTransacaoRequestDTO;
 
 import java.math.BigDecimal;
 
-public class CompraBoiDTO {
+public class ItemCompraRequestDTO {
     private BoiRequestDTO boiRequestDTO;
     private BigDecimal valor;
-    private Double pesoNaTransacao;
+    private PesagemTransacaoRequestDTO pesagemDTO;
 
-    public CompraBoiDTO() {
+    public ItemCompraRequestDTO() {
 
     }
-    public CompraBoiDTO(BoiRequestDTO boiRequestDTO, BigDecimal valor, Double pesoNaTransacao) {
+
+    public ItemCompraRequestDTO(BoiRequestDTO boiRequestDTO, BigDecimal valor, PesagemTransacaoRequestDTO pesagemDTO) {
         this.boiRequestDTO = boiRequestDTO;
         this.valor = valor;
-        this.pesoNaTransacao = pesoNaTransacao;
+        this.pesagemDTO = pesagemDTO;
     }
 
     public BoiRequestDTO getBoiRequestDTO() {
@@ -34,20 +36,20 @@ public class CompraBoiDTO {
         this.valor = valor;
     }
 
-    public Double getPesoNaTransacao() {
-        return pesoNaTransacao;
+    public PesagemTransacaoRequestDTO getPesagemDTO() {
+        return pesagemDTO;
     }
 
-    public void setPesoNaTransacao(Double pesoNaTransacao) {
-        this.pesoNaTransacao = pesoNaTransacao;
+    public void setPesagemDTO(PesagemTransacaoRequestDTO pesagemDTO) {
+        this.pesagemDTO = pesagemDTO;
     }
 
     @Override
     public String toString() {
-        return "CompraBoiDTO{" +
+        return "ItemCompraRequestDTO{" +
                 "boiRequestDTO=" + boiRequestDTO +
                 ", valor=" + valor +
-                ", pesoNaTransacao=" + pesoNaTransacao +
+                ", " + pesagemDTO +
                 '}';
     }
 }

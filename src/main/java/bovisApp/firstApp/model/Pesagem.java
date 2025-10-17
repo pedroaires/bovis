@@ -1,6 +1,7 @@
 package bovisApp.firstApp.model;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
@@ -19,7 +20,7 @@ public class Pesagem {
     @ManyToOne
     private Boi boi;
 
-    private Double peso;
+    private BigDecimal peso;
 
     private String descricao;
 
@@ -27,14 +28,14 @@ public class Pesagem {
     private List<Medicacao> medicacoes;
 
 
-    public Pesagem(LocalDate data, Double peso, String descricao, List<Medicacao> medicacoes) {
+    public Pesagem(LocalDate data, BigDecimal peso, String descricao, List<Medicacao> medicacoes) {
         this.data = data;
         this.peso = peso;
         this.descricao = descricao;
         this.medicacoes = medicacoes;
     }
 
-    public Pesagem(Boi boi, LocalDate data, Double peso, String descricao, List<Medicacao> medicacoes) {
+    public Pesagem(Boi boi, LocalDate data, BigDecimal peso, String descricao, List<Medicacao> medicacoes) {
         this.boi = boi;
         this.data = data;
         this.peso = peso;
@@ -54,11 +55,11 @@ public class Pesagem {
         this.data = data;
     }
 
-    public Double getPeso() {
+    public BigDecimal getPeso() {
         return peso;
     }
 
-    public void setPeso(Double peso) {
+    public void setPeso(BigDecimal peso) {
         this.peso = peso;
     }
 

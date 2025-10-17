@@ -1,6 +1,8 @@
 package bovisApp.firstApp.model;
 
 
+import org.springframework.context.annotation.EnableMBeanExport;
+
 import javax.persistence.*;
 import java.math.BigDecimal;
 
@@ -22,21 +24,23 @@ public class TransacaoBoi {
 
     private BigDecimal valor;
 
-    private Double pesoNaTransacao;
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "pesagem_id", nullable = false)
+    private Pesagem pesagem;
     public TransacaoBoi() {
     }
 
-    public TransacaoBoi(BigDecimal valor, Double peso, Boi boi, Transacao transacao) {
+    public TransacaoBoi(BigDecimal valor, Pesagem pesagem, Boi boi, Transacao transacao) {
         this.valor = valor;
-        this.pesoNaTransacao = peso;
+        this.pesagem = pesagem;
         this.boi = boi;
         this.transacao = transacao;
     }
 
-    public TransacaoBoi(Long id, BigDecimal valor, Double peso, Boi boi, Transacao transacao) {
+    public TransacaoBoi(Long id, BigDecimal valor, Pesagem pesagem, Boi boi, Transacao transacao) {
         this.id = id;
         this.valor = valor;
-        this.pesoNaTransacao = peso;
+        this.pesagem = pesagem;
         this.boi = boi;
         this.transacao = transacao;
     }
@@ -57,12 +61,12 @@ public class TransacaoBoi {
         this.valor = valor;
     }
 
-    public Double getPesoNaTransacao() {
-        return pesoNaTransacao;
+    public Pesagem getPesagem() {
+        return pesagem;
     }
 
-    public void setPeso(Double peso) {
-        this.pesoNaTransacao = peso;
+    public void setPesagem(Pesagem pesagem) {
+        this.pesagem = pesagem;
     }
 
     public Boi getBoi() {

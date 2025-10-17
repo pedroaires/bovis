@@ -1,6 +1,7 @@
 package bovisApp.firstApp.service;
 
 import bovisApp.firstApp.DTO.pesagem.PesagemRequestDTO;
+import bovisApp.firstApp.DTO.pesagem.PesagemTransacaoRequestDTO;
 import bovisApp.firstApp.exception.pesagem.PesagemInvalidaException;
 import bovisApp.firstApp.exception.pesagem.PesagemNaoEncontradaException;
 import bovisApp.firstApp.model.Boi;
@@ -10,6 +11,8 @@ import bovisApp.firstApp.repository.PesagemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -67,6 +70,26 @@ public class PesagemServiceImpl implements PesagemService{
 
         return pesagemRepository.save(pesagem);
     }
+
+    @Override
+    public Pesagem criarPesagemParaTransacao(Boi boi, PesagemTransacaoRequestDTO dto, LocalDate dataTransacao){
+        validaPesagemTransacaoDTO(dto);
+        if(dataTransacao == null){
+            throw new PesagemInvalidaException("Data da pesagem não pode ser nula");
+        }
+        DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        String descricao = "Pesagem registrada na transação. (" + dataTransacao.format(formatador) + ")";
+        Pesagem pesagem = new Pesagem(
+                boi,
+                dataTransacao,
+                dto.getPeso(),
+                descricao,
+                Collections.emptyList()
+        );
+        return pesagemRepository.save(pesagem);
+    }
+
+
     @Override
     public Pesagem editaPesagem(PesagemRequestDTO dto, Long pesagemId, Boi boi) {
         Pesagem pesagem = getPesagemById(pesagemId);
@@ -104,12 +127,22 @@ public class PesagemServiceImpl implements PesagemService{
         }
     }
 
+    public void validaPesagemTransacaoDTO(PesagemTransacaoRequestDTO dto){
+        if (dto == null){
+            throw new PesagemInvalidaException("Pesagem não pode ser nula");
+        }
+        if (dto.getPeso() == null){
+            throw new PesagemInvalidaException("Peso da pesagem não pode ser nulo");
+        }
+    }
+
     @Override
     public Pesagem deletaPesagem(Long id) {
         Pesagem pesagem = getPesagemById(id);
         pesagemRepository.delete(pesagem);
         return pesagem;
     }
+
 
 
 

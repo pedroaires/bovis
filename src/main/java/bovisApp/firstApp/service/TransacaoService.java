@@ -3,6 +3,8 @@ package bovisApp.firstApp.service;
 import bovisApp.firstApp.DTO.transacao.CompraRequestDTO;
 import bovisApp.firstApp.DTO.transacao.VendaRequestDTO;
 import bovisApp.firstApp.model.Transacao;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 
 public interface TransacaoService {
@@ -10,9 +12,11 @@ public interface TransacaoService {
 
     Transacao getTransacaoById(Long id);
 
-    Transacao cadastraCompra(CompraRequestDTO compraRequestDTO);
+    @Transactional
+    Transacao registraCompra(CompraRequestDTO compraRequestDTO);
 
-    Transacao cadastraVenda(VendaRequestDTO vendaRequestDTO);
+    @Transactional
+    Transacao registraVenda(VendaRequestDTO vendaRequestDTO);
 
     Transacao deletaTransacao(Long id);
 }

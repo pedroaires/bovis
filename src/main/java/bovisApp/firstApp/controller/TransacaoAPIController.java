@@ -38,14 +38,14 @@ public class TransacaoAPIController {
     @PostMapping(value = "/cadastraCompra")
     @ResponseStatus(HttpStatus.CREATED)
     public TransacaoResponseDTO cadastraCompra(@RequestBody CompraRequestDTO compraRequestDTO){
-        TransacaoResponseDTO response = new TransacaoResponseDTO(transacaoService.cadastraCompra(compraRequestDTO));
+        TransacaoResponseDTO response = new TransacaoResponseDTO(transacaoService.registraCompra(compraRequestDTO));
         return response;
     }
 
     @PostMapping(value = "/cadastraVenda")
     @ResponseStatus(HttpStatus.CREATED)
     public TransacaoResponseDTO cadastraVenda(@RequestBody VendaRequestDTO vendaRequestDTO){
-        TransacaoResponseDTO response = new TransacaoResponseDTO(transacaoService.cadastraVenda(vendaRequestDTO));
+        TransacaoResponseDTO response = new TransacaoResponseDTO(transacaoService.registraVenda(vendaRequestDTO));
         return response;
     }
 

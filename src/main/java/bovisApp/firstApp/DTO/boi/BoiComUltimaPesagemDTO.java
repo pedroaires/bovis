@@ -3,6 +3,7 @@ package bovisApp.firstApp.DTO.boi;
 import bovisApp.firstApp.model.Boi;
 import bovisApp.firstApp.model.Pesagem;
 
+import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.util.Optional;
 
@@ -12,9 +13,9 @@ public class BoiComUltimaPesagemDTO {
     private String estadoBoi;
     private String raca;
     private String dataUltimaPesagem;
-    private Double peso;
+    private BigDecimal peso;
 
-    public BoiComUltimaPesagemDTO(Long id, Integer numero, String estadoBoi, String raca, String dataUltimaPesagem, Double peso) {
+    public BoiComUltimaPesagemDTO(Long id, Integer numero, String estadoBoi, String raca, String dataUltimaPesagem, BigDecimal peso) {
         this.id = id;
         this.numero = numero;
         this.estadoBoi = estadoBoi;
@@ -25,7 +26,7 @@ public class BoiComUltimaPesagemDTO {
 
     public static BoiComUltimaPesagemDTO from(Boi boi, Optional<Pesagem> pesagemOptional) {
         String data = pesagemOptional.map(p -> p.getData().toString()).orElse(null);
-        Double peso = pesagemOptional.map(Pesagem::getPeso).orElse(null);
+        BigDecimal peso = pesagemOptional.map(Pesagem::getPeso).orElse(null);
 
         return new BoiComUltimaPesagemDTO(
                 boi.getId(),
@@ -77,11 +78,11 @@ public class BoiComUltimaPesagemDTO {
         this.dataUltimaPesagem = dataUltimaPesagem;
     }
 
-    public Double getPeso() {
+    public BigDecimal getPeso() {
         return peso;
     }
 
-    public void setPeso(Double peso) {
+    public void setPeso(BigDecimal peso) {
         this.peso = peso;
     }
 }

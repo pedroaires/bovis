@@ -2,20 +2,21 @@ package bovisApp.firstApp.DTO.pesagem;
 
 import bovisApp.firstApp.model.Medicacao;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
 public class PesagemRequestDTO {
     private Long boiId;
-    private Double peso;
+    private BigDecimal peso;
     private String descricao;
 
     private LocalDate data;
 
     private List<String> medicacoes;
 
-    public PesagemRequestDTO(Long boiId, Double peso, String descricao, LocalDate data, List<String> medicacoes) {
+    public PesagemRequestDTO(Long boiId, BigDecimal peso, String descricao, LocalDate data, List<String> medicacoes) {
         this.boiId = boiId;
         this.peso = peso;
         this.descricao = descricao;
@@ -31,11 +32,11 @@ public class PesagemRequestDTO {
         this.boiId = boiId;
     }
 
-    public Double getPeso() {
+    public BigDecimal getPeso() {
         return peso;
     }
 
-    public void setPeso(Double peso) {
+    public void setPeso(BigDecimal peso) {
         this.peso = peso;
     }
 

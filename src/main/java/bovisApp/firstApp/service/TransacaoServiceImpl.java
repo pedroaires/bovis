@@ -1,10 +1,10 @@
 package bovisApp.firstApp.service;
 
-import bovisApp.firstApp.DTO.boi.BoiRequestDTO;
 import bovisApp.firstApp.DTO.transacao.*;
 import bovisApp.firstApp.exception.transacao.TransacaoInvalidaException;
 import bovisApp.firstApp.exception.transacao.TransacaoNaoEncontradaException;
 import bovisApp.firstApp.model.Boi;
+import bovisApp.firstApp.model.Pesagem;
 import bovisApp.firstApp.model.Transacao;
 import bovisApp.firstApp.model.TransacaoBoi;
 import bovisApp.firstApp.model.enumeration.ModeloTransacao;
@@ -17,25 +17,28 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-
 @Service
 public class TransacaoServiceImpl implements TransacaoService{
 
     private final TransacaoRepository transacaoRepository;
 
     private final TransacaoBoiRepository transacaoBoiRepository;
+
     private final BoiService boiService;
+
+    private final PesagemService pesagemService;
 
     @Autowired
     public TransacaoServiceImpl(
             TransacaoRepository transacaoRepository,
             TransacaoBoiRepository transacaoBoiRepository,
-            BoiService boiService
+            BoiService boiService,
+            PesagemService pesagemService
     ){
         this.transacaoRepository = transacaoRepository;
         this.transacaoBoiRepository = transacaoBoiRepository;
         this.boiService = boiService;
+        this.pesagemService = pesagemService;
     }
     @Override
     public List<Transacao> getTransacoes() {
@@ -53,67 +56,42 @@ public class TransacaoServiceImpl implements TransacaoService{
 
     @Override
     @Transactional
-    public Transacao cadastraCompra(CompraRequestDTO compraRequestDTO) {
+    public Transacao registraCompra(CompraRequestDTO compraRequestDTO){
         validaTransacaoDTO(compraRequestDTO);
-        List<BoiRequestDTO> boisRequestDTOS = compraRequestDTO.getCompraBoiDTOS()
-                .stream().map(CompraBoiDTO::getBoiRequestDTO)
-                .collect(Collectors.toList());
-        List<Boi> boisComprados = boiService.cadastraBoisComprados(boisRequestDTOS);
-        List<TransacaoBoi> transacaoBois = criaTransacoesBoisDeCompra(boisComprados, compraRequestDTO.getCompraBoiDTOS());
-       return criarTransacao(compraRequestDTO, transacaoBois, TransacaoOperacao.COMPRA);
-    }
-
-    private List<TransacaoBoi> criaTransacoesBoisDeCompra(List<Boi> boisComprados, List<CompraBoiDTO> compraBoiDTOS){
-        //TODO:
-        // 1. Adicionar verificações como tamanho de boisComprados = compraBoiDTOS
-        // 2. Adicionar validacoes de transacaoBoi (Pesos positivos maiores que 0, valores positivos maiores que 0)
         List<TransacaoBoi> transacaoBois = new ArrayList<>();
-        for (int i = 0 ; i < compraBoiDTOS.size() ; i ++){
-            CompraBoiDTO dto = compraBoiDTOS.get(i);
-            Boi boi = boisComprados.get(i);
+        for (ItemCompraRequestDTO item : compraRequestDTO.getCompraBoiDTOS()){
+            Boi boi = boiService.cadastraBoi(item.getBoiRequestDTO());
+            Pesagem pesagem = pesagemService.criarPesagemParaTransacao(boi, item.getPesagemDTO(), compraRequestDTO.getData());
             TransacaoBoi transacaoBoi = new TransacaoBoi();
-
-            transacaoBoi.setPeso(dto.getPesoNaTransacao());
-            transacaoBoi.setValor(dto.getValor());
-
-            boi.addTransacaoBoi(transacaoBoi);
-
-            transacaoBois.add(transacaoBoi);
-        }
-        return transacaoBois;
-    }
-
-    private List<TransacaoBoi> criaTransacoesBoisDeVenda(List<Boi> boisVendidos, List<VendaBoiDTO> vendaBoiDTOS){
-        //TODO: Refatorar metodo duplicado ao criaTransacoesBoisDeCompra
-        List<TransacaoBoi> transacaoBois = new ArrayList<>();
-        for (int i = 0 ; i < vendaBoiDTOS.size() ; i ++){
-            VendaBoiDTO dto = vendaBoiDTOS.get(i);
-            Boi boi = boisVendidos.get(i);
-            TransacaoBoi transacaoBoi = new TransacaoBoi();
-            transacaoBoi.setPeso(dto.getPesoNaTransacao());
-            transacaoBoi.setValor(dto.getValor());
+            transacaoBoi.setPesagem(pesagem);
+            transacaoBoi.setValor(item.getValor());
 
             boi.addTransacaoBoi(transacaoBoi);
             transacaoBois.add(transacaoBoi);
         }
-        return transacaoBois;
+
+        return criarTransacao(compraRequestDTO, transacaoBois, TransacaoOperacao.COMPRA);
     }
 
     @Override
-    public Transacao cadastraVenda(VendaRequestDTO vendaRequestDTO) {
-        this.validaTransacaoDTO(vendaRequestDTO);
-        List<Boi> boisVendidos = boiService.cadastraBoisVendidos(
-                vendaRequestDTO.getVendaBoiDTOS()
-                        .stream()
-                        .map(VendaBoiDTO::getBoiId)
-                        .collect(Collectors.toList()));
+    @Transactional
+    public Transacao registraVenda(VendaRequestDTO vendaRequestDTO){
+        validaTransacaoDTO(vendaRequestDTO);
+        List<TransacaoBoi> transacaoBois = new ArrayList<>();
+        for (ItemVendaRequestDTO item : vendaRequestDTO.getVendaBoiDTOS()){
+            Boi boi = boiService.atualizaBoiVendido(item.getBoiId());
+            Pesagem pesagem = pesagemService.criarPesagemParaTransacao(boi, item.getPesagemDTO(), vendaRequestDTO.getData());
+            TransacaoBoi transacaoBoi = new TransacaoBoi();
+            transacaoBoi.setPesagem(pesagem);
+            transacaoBoi.setValor(item.getValor());
 
-        List<TransacaoBoi> transacaoBois = criaTransacoesBoisDeVenda(
-                boisVendidos,
-                vendaRequestDTO.getVendaBoiDTOS()
-        );
+            boi.addTransacaoBoi(transacaoBoi);
+            transacaoBois.add(transacaoBoi);
+        }
+
         return criarTransacao(vendaRequestDTO, transacaoBois, TransacaoOperacao.VENDA);
     }
+
 
     @Override
     public Transacao deletaTransacao(Long id) {

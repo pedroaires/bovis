@@ -1,9 +1,9 @@
 package bovisApp.firstApp.service;
 
 import bovisApp.firstApp.DTO.boi.BoiRequestDTO;
-import bovisApp.firstApp.DTO.transacao.CompraBoiDTO;
+import bovisApp.firstApp.DTO.transacao.ItemCompraRequestDTO;
 import bovisApp.firstApp.DTO.transacao.CompraRequestDTO;
-import bovisApp.firstApp.DTO.transacao.VendaBoiDTO;
+import bovisApp.firstApp.DTO.transacao.ItemVendaRequestDTO;
 import bovisApp.firstApp.DTO.transacao.VendaRequestDTO;
 import bovisApp.firstApp.exception.transacao.TransacaoInvalidaException;
 import bovisApp.firstApp.exception.transacao.TransacaoNaoEncontradaException;
@@ -20,7 +20,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import javax.persistence.EntityNotFoundException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.*;
@@ -41,12 +40,16 @@ public class TransacaoServiceImplTest {
     @Mock
     private TransacaoBoiRepository transacaoBoiRepository;
 
+
+    @Mock
+    private PesagemService pesagemService;
+
     @Mock
     private BoiService boiService;
 
     @BeforeEach
     void setUp() {
-        transacaoService_underTest = new TransacaoServiceImpl(transacaoRepository, transacaoBoiRepository, boiService);
+        transacaoService_underTest = new TransacaoServiceImpl(transacaoRepository, transacaoBoiRepository, boiService, pesagemService);
     }
 
     private Boi gerarBoiAleatorio() {
@@ -55,21 +58,21 @@ public class TransacaoServiceImplTest {
         boi.setTransacaoBois(new ArrayList<>());
         return boi;
     }
-    private CompraBoiDTO gerarCompraBoiDTO(){
+    private ItemCompraRequestDTO gerarCompraBoiDTO(){
 
-        CompraBoiDTO compraBoiDTO = new CompraBoiDTO();
+        ItemCompraRequestDTO itemCompraRequestDTO = new ItemCompraRequestDTO();
         BoiRequestDTO boiRequestDTO = new BoiRequestDTO();
-        compraBoiDTO.setBoiRequestDTO(boiRequestDTO);
-        compraBoiDTO.setPesoNaTransacao(Double.valueOf(500));
-        compraBoiDTO.setValor(BigDecimal.TEN);
-        return compraBoiDTO;
+        itemCompraRequestDTO.setBoiRequestDTO(boiRequestDTO);
+        itemCompraRequestDTO.setPesoNaTransacao(Double.valueOf(500));
+        itemCompraRequestDTO.setValor(BigDecimal.TEN);
+        return itemCompraRequestDTO;
     }
-    private VendaBoiDTO gerarVendaBoiDTO(Long boiId) {
-        VendaBoiDTO vendaBoiDTO = new VendaBoiDTO();
-        vendaBoiDTO.setBoiId(boiId);
-        vendaBoiDTO.setPesoNaTransacao(Double.valueOf(450));
-        vendaBoiDTO.setValor(BigDecimal.valueOf(750));
-        return vendaBoiDTO;
+    private ItemVendaRequestDTO gerarVendaBoiDTO(Long boiId) {
+        ItemVendaRequestDTO itemVendaRequestDTO = new ItemVendaRequestDTO();
+        itemVendaRequestDTO.setBoiId(boiId);
+        itemVendaRequestDTO.setPesoNaTransacao(Double.valueOf(450));
+        itemVendaRequestDTO.setValor(BigDecimal.valueOf(750));
+        return itemVendaRequestDTO;
     }
 
     private CompraRequestDTO gerarCompraRequest() {
@@ -79,8 +82,8 @@ public class TransacaoServiceImplTest {
         dto.setDescricao("Compra de bois");
         dto.setModeloTransacao(ModeloTransacao.UNIDADE.name());
         dto.setContraParte("Fazenda Exemplo");
-        CompraBoiDTO compraBoiDTO = gerarCompraBoiDTO();
-        dto.setCompraBoiDTOS(List.of(compraBoiDTO));
+        ItemCompraRequestDTO itemCompraRequestDTO = gerarCompraBoiDTO();
+        dto.setCompraBoiDTOS(List.of(itemCompraRequestDTO));
         return dto;
     }
 
@@ -92,11 +95,11 @@ public class TransacaoServiceImplTest {
         dto.setModeloTransacao(ModeloTransacao.PESO.name());
         dto.setContraParte("Frigorífico XYZ");
 
-        List<VendaBoiDTO> vendaBoiDTOS = boiIds.stream()
+        List<ItemVendaRequestDTO> itemVendaRequestDTOS = boiIds.stream()
                 .map(this::gerarVendaBoiDTO)
                 .collect(Collectors.toList());
 
-        dto.setVendaBoiDTOS(vendaBoiDTOS);
+        dto.setVendaBoiDTOS(itemVendaRequestDTOS);
         return dto;
     }
 
@@ -107,7 +110,7 @@ public class TransacaoServiceImplTest {
         List<Boi> bois = List.of(gerarBoiAleatorio());
         List<BoiRequestDTO> expectedBoiRequests = dto.getCompraBoiDTOS()
                 .stream()
-                .map(CompraBoiDTO::getBoiRequestDTO)
+                .map(ItemCompraRequestDTO::getBoiRequestDTO)
                 .collect(Collectors.toList());
 
         ArgumentCaptor<List<BoiRequestDTO>> boiRequestCaptor = ArgumentCaptor.forClass(List.class);
@@ -142,7 +145,7 @@ public class TransacaoServiceImplTest {
 
         List<Long> expectedBoiIds = dto.getVendaBoiDTOS()
                 .stream()
-                .map(VendaBoiDTO::getBoiId)
+                .map(ItemVendaRequestDTO::getBoiId)
                 .collect(Collectors.toList());
 
         ArgumentCaptor<List<Long>> boiIdsCaptor = ArgumentCaptor.forClass(List.class);

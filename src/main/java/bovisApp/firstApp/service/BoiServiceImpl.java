@@ -109,7 +109,8 @@ public class BoiServiceImpl implements BoiService {
         return boisIds.stream().map(this::atualizaBoiVendido).collect(Collectors.toList());
     }
 
-    private Boi atualizaBoiVendido(Long id){
+    @Override
+    public Boi atualizaBoiVendido(Long id){
         Boi boi = getBoiById(id);
         EstadoBoi estadoBoi = boi.getEstadoBoi();
         if (!estadoBoi.equals(EstadoBoi.NA_FAZENDA)) {
