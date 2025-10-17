@@ -1,4 +1,3 @@
-<!-- src/views/SellCattleView.vue -->
 <template>
   <v-container>
     <v-stepper v-model="step">
@@ -162,7 +161,6 @@ async function fetchCattle() {
   try {
     const resp = await api.getActiveCattleWithWeight()
     cattle.value = resp.data ?? []
-    console.log(cattle.value);
   } catch (e) {
     console.error(e)
   } finally {

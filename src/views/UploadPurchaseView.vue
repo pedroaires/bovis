@@ -1,70 +1,132 @@
-<!-- src/views/UploadPurchaseView.vue -->
 <template>
-  <div class="space-y-4">
-    <h1 class="text-h5">Cadastro de Compra (Upload)</h1>
+  <v-container>
+    <v-stepper v-model="step">
+      <v-stepper-header>
+        <v-stepper-item :value="1" title="Selecionar arquivo e pré-visualizar" />
+        <v-stepper-item :value="2" title="Dados da transação e itens" />
+      </v-stepper-header>
 
-    <v-btn color="primary" prepend-icon="mdi-file-upload" @click="showUpload = true">
-      Selecionar arquivo
-    </v-btn>
+      <v-stepper-window>
+        <!-- Passo 1: Upload + Preview -->
+        <v-stepper-window-item :value="1">
+          <v-card>
+            <v-card-text>
+              <v-alert
+                v-if="parseError"
+                type="error"
+                class="mb-4"
+                dismissible
+                @click:close="parseError = null"
+              >
+                {{ parseError }}
+              </v-alert>
 
-    <UploadDialog
-      :model-value="showUpload"
-      :loading="uploading"
-      @update:modelValue="showUpload = $event"
-      @preview="onPreviewFile"
-      @download-template="onDownloadTemplate"
-    />
+              <div class="mb-4">
+                <v-btn color="primary" prepend-icon="mdi-file-upload" @click="showUpload = true">
+                  Selecionar arquivo
+                </v-btn>
+                <v-btn class="ml-2" variant="text" @click="onDownloadTemplate">
+                  Baixar template CSV
+                </v-btn>
+              </div>
 
-    <v-card v-if="previewReady" class="mt-4">
-      <v-card-title class="text-h6">
-        <v-icon class="mr-2">mdi-eye</v-icon>
-        Pré-visualização
-      </v-card-title>
+              <UploadDialog
+                :model-value="showUpload"
+                :loading="uploading"
+                @update:modelValue="showUpload = $event"
+                @preview="onPreviewFile"
+                @download-template="onDownloadTemplate"
+              />
 
-      <v-card-text>
-        <v-alert v-if="parseError" type="error" class="mb-4" dismissible @click:close="parseError = null">
-          {{ parseError }}
-        </v-alert>
+              <v-card v-if="previewReady" variant="tonal" class="mt-2">
+                <v-card-title class="text-subtitle-1">
+                  <v-icon class="mr-2">mdi-eye</v-icon>
+                  Pré-visualização
+                </v-card-title>
+                <v-card-text>
+                  <div v-if="previewRows.length">
+                    <PreviewTable
+                      :data="previewRows"
+                      :expected="expectedItemColumns"
+                      :total="totalRows"
+                      :editable="['numero','raca','pesoNaTransacao','valorUnitario']"
+                      @update:data="onPreviewEdited"
+                    />
+                    <div class="text-caption mt-2">
+                      Campos por item: <b>numero</b>, <b>raca</b>, <b>pesoNaTransacao</b>, <b>valorUnitario</b>.
+                      <em>estadoBoi</em> será enviado como <b>NA_FAZENDA</b>.
+                    </div>
+                  </div>
+                  <div v-else class="text-body-2">Nenhum dado para exibir.</div>
+                </v-card-text>
+              </v-card>
+            </v-card-text>
 
-        <!-- Formulário (campos comuns) -->
-        <TransacaoForm
-          ref="txFormRef"
-          v-model="form"
-          :contra-parte-label="'Fornecedor'"
-          :mostrar-modelo-transacao="false"
-          :rules="rules"
-        />
+            <v-card-actions>
+              <v-spacer />
+              <v-btn
+                color="primary"
+                :disabled="!canGoStep2"
+                @click="toStep2"
+              >
+                Continuar
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-stepper-window-item>
 
-        <!-- Tabela (itens/bois) -->
-        <div v-if="previewRows.length">
-          <PreviewTable
-            :data="previewRows"
-            :expected="expectedItemColumns"
-            :total="totalRows"
-            :editable="['numero','raca','pesoNaTransacao','valorUnitario']"
-            @update:data="onPreviewEdited"
-          />
-          <div class="text-caption mt-2">
-            Campos por item: <strong>numero</strong>, <strong>raca</strong>, <strong>pesoNaTransacao</strong>, <strong>valorUnitario</strong>.
-            <em>estadoBoi</em> será enviado como <strong>NA_FAZENDA</strong>.
-          </div>
-        </div>
-        <div v-else class="text-body-2">Nenhum dado para exibir.</div>
-      </v-card-text>
+        <!-- Passo 2: Formulário + Itens + Confirmar -->
+        <v-stepper-window-item :value="2">
+          <v-card>
+            <v-card-text>
+              <TransacaoForm
+                ref="txFormRef"
+                v-model="form"
+                :contra-parte-label="'Fornecedor'"
+                :mostrar-modelo-transacao="false"
+                :rules="rules"
+              />
 
-      <v-card-actions>
-        <v-spacer />
-        <v-btn text @click="resetUpload">Trocar arquivo</v-btn>
-        <v-btn color="primary" :disabled="!canConfirmComputed" :loading="uploading" @click="confirmUpload">
-          Confirmar Upload
-        </v-btn>
-      </v-card-actions>
-    </v-card>
+              <div class="mt-6">
+                <div class="text-subtitle-2 mb-2">
+                  Itens da compra (edite se necessário):
+                </div>
+
+                <PreviewTable
+                  :data="previewRows"
+                  :expected="expectedItemColumns"
+                  :total="totalRows"
+                  :editable="['numero','raca','pesoNaTransacao','valorUnitario']"
+                  @update:data="onPreviewEdited"
+                />
+
+                <div class="text-right mt-4 text-body-2">
+                  Total dos itens (R$): <b>{{ totalItensFormatado }}</b>
+                </div>
+              </div>
+            </v-card-text>
+
+            <v-card-actions>
+              <v-btn variant="text" @click="step = 1">Voltar</v-btn>
+              <v-spacer />
+              <v-btn
+                color="primary"
+                :loading="uploading"
+                :disabled="!canConfirmComputed"
+                @click="confirmUpload"
+              >
+                Confirmar Compra
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-stepper-window-item>
+      </v-stepper-window>
+    </v-stepper>
 
     <v-snackbar v-model="snackbar.show" :timeout="4000">
       {{ snackbar.text }}
     </v-snackbar>
-  </div>
+  </v-container>
 </template>
 
 <script setup>
@@ -75,24 +137,25 @@ import PreviewTable from '@/components/molecules/EditableTable.vue'
 import TransacaoForm from '@/components/molecules/TransacaoForm.vue'
 import api from '@/services/api'
 
-// UI/estado
+// Stepper e UI
+const step = ref(1)
 const showUpload = ref(false)
 const uploading = ref(false)
 const snackbar = ref({ show: false, text: '' })
 const parseError = ref(null)
 
-// preview
+// Preview
 const previewRows = ref([])
 const fullData = ref([])
 const totalRows = ref(0)
 
-// formulário (via TransacaoForm)
+// Formulário (TransacaoForm)
 const txFormRef = ref(null)
 const form = ref({
   data: '',
   descricao: '',
   modeloTransacao: 'PESO',
-  contraParte: '',   // Fornecedor
+  contraParte: '',
   valorTotal: '',
 })
 const rules = {
@@ -100,12 +163,21 @@ const rules = {
   pos: v => (v === '' || Number(v) > 0) || 'Deve ser > 0',
 }
 
+// Colunas esperadas
 const expectedItemColumns = ['numero','raca','pesoNaTransacao','valorUnitario']
-const previewReady = computed(() => parseError.value !== null || fullData.value.length > 0)
-const canConfirmComputed = computed(() =>
-  !parseError.value && fullData.value.length > 0
-)
 
+// Estados computados
+const previewReady = computed(() => parseError.value !== null || fullData.value.length > 0)
+const canGoStep2 = computed(() => !parseError.value && fullData.value.length > 0)
+const canConfirmComputed = computed(() => !parseError.value && fullData.value.length > 0)
+
+// Total (client-side) para exibição
+const totalItens = computed(() =>
+  fullData.value.reduce((acc, it) => acc + (numOrNull(it?.valorUnitario) ?? 0), 0)
+)
+const totalItensFormatado = computed(() => totalItens.value.toFixed(2))
+
+// Ações Passo 1
 const onPreviewFile = async (file) => {
   parseError.value = null
   previewRows.value = []
@@ -119,7 +191,6 @@ const onPreviewFile = async (file) => {
     if (missing.length) {
       throw new Error(`Colunas ausentes no arquivo: ${missing.join(', ')}`)
     }
-
     fullData.value = all
     previewRows.value = rows.slice(0, 100)
     totalRows.value = all.length
@@ -148,6 +219,7 @@ function normalizeKeys(row) {
 }
 
 function onPreviewEdited(editedPreview) {
+  // Mantém os 100 primeiros sincronizados
   previewRows.value = editedPreview
   for (let i = 0; i < editedPreview.length; i++) {
     if (!fullData.value[i]) fullData.value[i] = {}
@@ -155,8 +227,12 @@ function onPreviewEdited(editedPreview) {
   }
 }
 
+function toStep2() {
+  if (!canGoStep2.value) return
+  step.value = 2
+}
+
 const confirmUpload = async () => {
-  // valida o TransacaoForm
   const ok = await txFormRef.value?.validate()
   if (!ok) return
 
@@ -189,7 +265,7 @@ const confirmUpload = async () => {
 
     await api.createCompra(payload)
     snackbar.value = { show: true, text: 'Upload realizado com sucesso.' }
-    resetUpload(true)
+    resetAll()
   } catch (e) {
     console.error('createCompra error:', e?.response?.data || e)
     snackbar.value = { show: true, text: 'Falha no upload. Verifique os dados.' }
@@ -203,24 +279,20 @@ function numOrNull(v) {
   const n = Number(String(v).replace(',', '.'))
   return Number.isFinite(n) ? n : null
 }
-
 function intOrNull(v) {
   if (v === null || v === undefined || v === '') return null
   const n = parseInt(String(v).trim(), 10)
   return Number.isFinite(n) ? n : null
 }
-
-const resetUpload = (clear = false) => {
-  if (clear) {
-    fullData.value = []
-    previewRows.value = []
-    totalRows.value = 0
-    form.value = { data: '', descricao: '', modeloTransacao: 'PESO', contraParte: '', valorTotal: '' }
-  }
+function resetAll() {
+  step.value = 1
+  fullData.value = []
+  previewRows.value = []
+  totalRows.value = 0
   parseError.value = null
-  showUpload.value = true
+  form.value = { data: '', descricao: '', modeloTransacao: 'PESO', contraParte: '', valorTotal: '' }
+  showUpload.value = false
 }
-
 const onDownloadTemplate = () => {
   const csv = [
     'numero,raca,pesoNaTransacao,valorUnitario',

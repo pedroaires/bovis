@@ -13,14 +13,6 @@
         :rules="[rules.req]"
       />
       <v-text-field
-        v-model="valorTotalProxy"
-        label="Valor Total (R$)"
-        inputmode="decimal"
-        :rules="[rules.req, rules.pos]"
-        :hint="valorTotalHint"
-        persistent-hint
-      />
-      <v-text-field
         v-model="descricaoProxy"
         label="Descrição"
         class="md:col-span-3"
@@ -42,11 +34,10 @@ import { ref, computed } from 'vue'
 const props = defineProps({
   modelValue: {
     type: Object,
-    default: () => ({ data: '', descricao: '', modeloTransacao: 'PESO', contraParte: '', valorTotal: '' }),
+    default: () => ({ data: '', descricao: '', modeloTransacao: 'PESO', contraParte: ''}),
   },
   contraParteLabel: { type: String, default: 'Comprador' },
   mostrarModeloTransacao: { type: Boolean, default: false },
-  valorTotalHint: { type: String, default: 'Se vazio, soma os itens' },
   rules: {
     type: Object,
     default: () => ({
@@ -77,10 +68,6 @@ const modeloTransacaoProxy = computed({
 const contraParteProxy = computed({
   get: () => props.modelValue.contraParte,
   set: v => updateField({ contraParte: v }),
-})
-const valorTotalProxy = computed({
-  get: () => props.modelValue.valorTotal,
-  set: v => updateField({ valorTotal: v }),
 })
 
 const formRef = ref(null)
