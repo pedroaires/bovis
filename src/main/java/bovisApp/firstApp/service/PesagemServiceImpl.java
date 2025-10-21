@@ -115,8 +115,14 @@ public class PesagemServiceImpl implements PesagemService{
 
     @Override
     public Optional<Pesagem> getUltimaPesagemPorBoiId(Long boiId) {
-        List<Pesagem> pesagens = getPesagemByBoiId(boiId);
-        return pesagens.stream().max(Comparator.comparing(Pesagem::getData));
+
+        return pesagemRepository.findTopByBoiIdOrderByDataDesc(boiId);
+    }
+
+    @Override
+    public List<Pesagem> getUltimasDuasPesagensPorBoiId(Long boiId) {
+
+        return pesagemRepository.findTop2ByBoiIdOrderByDataDesc(boiId);
     }
 
     @Override

@@ -26,5 +26,7 @@ public interface PesagemService {
 
     Optional<Pesagem> getUltimaPesagemPorBoiId(Long boiId);
 
+    List<Pesagem> getUltimasDuasPesagensPorBoiId(Long boiId);
+
     List<Pesagem> cadastraLotePesagem(List<PesagemRequestDTO> pesagens);
 }

@@ -20,7 +20,7 @@ public class BoiSpecification {
                 return criteriaBuilder.isTrue(criteriaBuilder.literal(true));
             }
             else{
-                return criteriaBuilder.equal(root.get("racas").get("id"), racaId);
+                return criteriaBuilder.equal(root.get("raca").get("id"), racaId);
             }
         };
     }

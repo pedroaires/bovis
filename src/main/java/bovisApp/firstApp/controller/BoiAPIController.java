@@ -1,7 +1,9 @@
 package bovisApp.firstApp.controller;
 
 import bovisApp.firstApp.DTO.boi.*;
+import bovisApp.firstApp.DTO.pesagem.PesagemResponseDTO;
 import bovisApp.firstApp.model.Boi;
+import bovisApp.firstApp.model.Pesagem;
 import bovisApp.firstApp.service.BoiPesagemFacadeService;
 import bovisApp.firstApp.service.BoiService;
 import org.springframework.data.domain.Page;
@@ -87,6 +89,25 @@ public class BoiAPIController {
         return boiPesagemService.getBoisAtivosComUltimaPesagem().stream()
                 .map(pair -> BoiComUltimaPesagemDTO.from(pair.getFirst(), pair.getSecond()))
                 .collect(Collectors.toList());
+    }
+
+    @GetMapping(value = "/performance-summary")
+    @ResponseStatus(HttpStatus.OK)
+    public Page<BoiSumarioPerformanceDTO> getPerformanceSummary(
+            @ModelAttribute BoiFilterRequestDTO filterDTO,
+            Pageable pageable
+    ) {
+        return boiPesagemService.getCattlePerformanceSummary(filterDTO, pageable);
+    }
+
+    @GetMapping(value = "/{boiId}/weight-history")
+    @ResponseStatus(HttpStatus.OK)
+    public List<PesagemResponseDTO> getPerformanceSummary(
+            @PathVariable Long boiId
+    ) {
+        System.out.println("boi id:");
+        System.out.println(boiId);
+        return boiPesagemService.getHistoricoDePesagem(boiId).stream().map(PesagemResponseDTO::new).collect(Collectors.toList());
     }
 
 }
