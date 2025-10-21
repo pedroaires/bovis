@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import bovisApp.firstApp.repository.RacaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -40,5 +41,10 @@ public class RacaServiceImpl implements RacaService{
             racaRepository.save(raca);
         }
         return raca;
+    }
+
+    @Override
+    public List<Raca> getRacas(){
+        return racaRepository.findAll();
     }
 }
