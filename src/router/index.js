@@ -1,11 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import DefaultLayout from '@/layouts/DefaultLayout.vue';
 import HomeView from '@/views/HomeView.vue';
-import CattleVisualizationView from '@/views/CattleVisualizationView.vue';
 import TransactionVisualizationView from '@/views/TransactionsVisualizationView.vue';
 import UploadPurchaseView from '@/views/UploadPurchaseView.vue';
 import SellCattleView from '@/views/SellCattleView.vue';
 import RegisterWeighingView from '@/views/RegisterWeighingView.vue';
+import CattlePerformanceSummary from '@/views/CattlePerformanceView.vue';
 const routes = [
   {
     path: '/',
@@ -18,8 +18,8 @@ const routes = [
       },
       {
         path: '/cattle-visualization',
-        name: 'CattleVisualization',
-        component: CattleVisualizationView,
+        name: 'CattlePerformanceSummary',
+        component: CattlePerformanceSummary,
       },
       {
         path: '/transactions-visualization',

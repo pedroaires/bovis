@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const apiClient = axios.create({
-  baseURL: 'http://192.168.1.102:8080/api',
+  baseURL: 'http://192.168.1.101:8080/api',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -25,5 +25,17 @@ export default {
   },
   async createVenda(vendaRequest) {
     return apiClient.post('/transacao/cadastraVenda', vendaRequest)
+  },
+  async createWeighingBatch(weighingRequestList) {
+    return apiClient.post('/pesagem/cadastraLotePesagem', weighingRequestList)
+  },
+  async fetchCattlePerformance(params) {
+    return apiClient.get('/boi/performance-summary', {params})
+  },
+  async fetchCattleWeightHistoryById(boiId) {
+    return apiClient.get(`/boi//${boiId}/weight-history`);
+  },
+  async fetchRacas(){
+    return apiClient.get('raca/listRacas');
   }
 };
