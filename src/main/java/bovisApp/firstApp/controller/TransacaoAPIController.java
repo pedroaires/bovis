@@ -1,10 +1,7 @@
 package bovisApp.firstApp.controller;
 
 
-import bovisApp.firstApp.DTO.transacao.CompraRequestDTO;
-import bovisApp.firstApp.DTO.transacao.TransacaoDetalhadaCompletaDTO;
-import bovisApp.firstApp.DTO.transacao.TransacaoResponseDTO;
-import bovisApp.firstApp.DTO.transacao.VendaRequestDTO;
+import bovisApp.firstApp.DTO.transacao.*;
 import bovisApp.firstApp.service.TransacaoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -57,6 +54,16 @@ public class TransacaoAPIController {
     @ResponseStatus(HttpStatus.CREATED)
     public TransacaoResponseDTO cadastraVenda(@RequestBody VendaRequestDTO vendaRequestDTO){
         TransacaoResponseDTO response = new TransacaoResponseDTO(transacaoService.registraVenda(vendaRequestDTO));
+        return response;
+    }
+
+    @PutMapping(value = "/editaTransacao/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public TransacaoResponseDTO editaTransacao(
+            @PathVariable Long id,
+            @RequestBody EditaTransacaoRequestDTO editaTransacaoRequestDTO
+    ){
+        TransacaoResponseDTO response = new TransacaoResponseDTO(transacaoService.editaTransacao(id, editaTransacaoRequestDTO));
         return response;
     }
 

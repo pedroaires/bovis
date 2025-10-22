@@ -108,6 +108,26 @@ public class TransacaoServiceImpl implements TransacaoService{
                 .orElseThrow(() -> new TransacaoNaoEncontradaException(id));
     }
 
+    @Override
+    public Transacao editaTransacao(Long id, EditaTransacaoRequestDTO dto) {
+        if(dto == null){
+            throw new TransacaoInvalidaException("Dados de edição não podem ser nulos");
+        }
+
+        Transacao transacao = this.getTransacaoById(id);
+
+        if(dto.getValor() != null) transacao.setValor(dto.getValor());
+        if(dto.getData() != null) transacao.setData(dto.getData());
+        if(dto.getDescricao() != null) transacao.setDescricao(dto.getDescricao());
+        if(dto.getContraparte() != null) transacao.setContraParte(dto.getContraparte());
+        if(dto.getModeloTransacao() != null){
+            validaModeloTransacao(dto.getModeloTransacao());
+            transacao.setModeloTransacao(ModeloTransacao.valueOf(dto.getModeloTransacao().toUpperCase()));
+        }
+        transacaoRepository.save(transacao);
+        return transacao;
+    }
+
 
     private Transacao criarTransacao(
             TransacaoRequestDTO dto,
@@ -136,12 +156,15 @@ public class TransacaoServiceImpl implements TransacaoService{
         if (transacaoRequestDTO.getContraParte() == null){
             throw new TransacaoInvalidaException("Contraparte não pode ser nula");
         }
-        String modeloTransacaoStr = transacaoRequestDTO.getModeloTransacao();
+        this.validaModeloTransacao(transacaoRequestDTO.getModeloTransacao());
+
+    }
+    private void validaModeloTransacao(String modeloTransacaoStr){
         if(modeloTransacaoStr == null || modeloTransacaoStr.isEmpty()){
             throw new TransacaoInvalidaException("ModeloTransacao não pode ser nulo ou vazio");
         }
         try{
-            ModeloTransacao.valueOf(modeloTransacaoStr);
+            ModeloTransacao.valueOf(modeloTransacaoStr.toUpperCase());
         } catch(IllegalArgumentException e){
             throw new TransacaoInvalidaException("Valor inválido para ModeloTransacao");
         }
