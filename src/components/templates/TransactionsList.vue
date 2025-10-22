@@ -155,9 +155,142 @@
         </v-card-text>
 
         <v-card-actions>
+          <v-btn 
+            color="primary" 
+            variant="tonal"
+            prepend-icon="mdi-pencil"
+            @click="openEditDialog"
+          >
+            Editar
+          </v-btn>
           <v-spacer />
           <v-btn color="primary" variant="text" @click="dialog = false">
             Fechar
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- Dialog de edição -->
+    <v-dialog v-model="editDialog" max-width="700px" persistent>
+      <v-card>
+        <v-card-title class="d-flex align-center justify-space-between bg-secondary">
+          <span class="text-h6">
+            Editar Transação #{{ editForm.id }}
+          </span>
+          <v-btn
+            icon="mdi-close"
+            variant="text"
+            @click="closeEditDialog"
+          />
+        </v-card-title>
+
+        <v-card-text class="pt-6">
+          <v-form ref="editFormRef" v-model="formValid">
+            <v-row>
+              <!-- Data -->
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="editForm.data"
+                  label="Data"
+                  type="date"
+                  :rules="[v => !!v || 'Data é obrigatória']"
+                  variant="outlined"
+                  density="comfortable"
+                />
+              </v-col>
+
+              <!-- Operação -->
+              <v-col cols="12" md="6">
+                <v-select
+                  v-model="editForm.operacao"
+                  label="Operação"
+                  :items="['COMPRA', 'VENDA']"
+                  :rules="[v => !!v || 'Operação é obrigatória']"
+                  variant="outlined"
+                  density="comfortable"
+                  readonly
+                  disabled
+                />
+              </v-col>
+
+              <!-- Modelo de Transação -->
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="editForm.modeloTransacao"
+                  label="Modelo de Transação"
+                  :rules="[v => !!v || 'Modelo é obrigatório']"
+                  variant="outlined"
+                  density="comfortable"
+                />
+              </v-col>
+
+              <!-- Contraparte -->
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="editForm.contraParte"
+                  :label="editForm.operacao === 'COMPRA' ? 'Fornecedor' : 'Comprador'"
+                  variant="outlined"
+                  density="comfortable"
+                />
+              </v-col>
+
+              <!-- Valor Total -->
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="editForm.valor"
+                  label="Valor Total"
+                  type="number"
+                  step="0.01"
+                  prefix="R$"
+                  :rules="[
+                    v => v != null && v !== '' || 'Valor é obrigatório',
+                    v => v >= 0 || 'Valor deve ser positivo'
+                  ]"
+                  variant="outlined"
+                  density="comfortable"
+                />
+              </v-col>
+
+              <!-- Descrição -->
+              <v-col cols="12">
+                <v-textarea
+                  v-model="editForm.descricao"
+                  label="Descrição"
+                  rows="3"
+                  variant="outlined"
+                  density="comfortable"
+                />
+              </v-col>
+            </v-row>
+          </v-form>
+
+          <!-- Mensagens de erro/sucesso -->
+          <v-alert v-if="saveError" type="error" variant="tonal" class="mt-4">
+            {{ saveError }}
+          </v-alert>
+          <v-alert v-if="saveSuccess" type="success" variant="tonal" class="mt-4">
+            Transação atualizada com sucesso!
+          </v-alert>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            variant="text"
+            @click="closeEditDialog"
+            :disabled="saving"
+          >
+            Cancelar
+          </v-btn>
+          <v-btn
+            color="primary"
+            variant="elevated"
+            @click="saveTransaction"
+            :loading="saving"
+            :disabled="!formValid"
+          >
+            Salvar
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -185,12 +318,28 @@ export default {
       sortBy: [{ key: 'data', order: 'desc' }],
       loading: false,
       
-      // Dialog
+      // Dialog de detalhes
       dialog: false,
       selectedTransaction: null,
       items: [],
       loadingItems: false,
       itemsError: null,
+
+      // Dialog de edição
+      editDialog: false,
+      editForm: {
+        id: null,
+        data: '',
+        operacao: '',
+        modeloTransacao: '',
+        contraParte: '',
+        valor: null,
+        descricao: '',
+      },
+      formValid: false,
+      saving: false,
+      saveError: null,
+      saveSuccess: false,
     };
   },
   async created() {
@@ -220,7 +369,6 @@ export default {
         let response;
         response = await api.getTransacaoById(item.id)
         const transacao = response.data;
-        console.log(transacao);
         
         this.items = (transacao.itens || []).map(dto => ({
           numero: dto.boi?.numero,
@@ -235,6 +383,81 @@ export default {
         this.itemsError = 'Não foi possível carregar os itens desta transação.';
       } finally {
         this.loadingItems = false;
+      }
+    },
+
+    openEditDialog() {
+      // Preenche o formulário com os dados atuais
+      this.editForm = {
+        id: this.selectedTransaction.id,
+        data: this.selectedTransaction.data,
+        operacao: this.selectedTransaction.operacao,
+        modeloTransacao: this.selectedTransaction.modeloTransacao,
+        contraParte: this.selectedTransaction.contraParte || '',
+        valor: this.selectedTransaction.valor,
+        descricao: this.selectedTransaction.descricao || '',
+      };
+      this.saveError = null;
+      this.saveSuccess = false;
+      this.editDialog = true;
+    },
+
+    closeEditDialog() {
+      this.editDialog = false;
+      this.saveError = null;
+      this.saveSuccess = false;
+      // Reseta o formulário
+      this.editForm = {
+        id: null,
+        data: '',
+        operacao: '',
+        modeloTransacao: '',
+        contraParte: '',
+        valor: null,
+        descricao: '',
+      };
+    },
+
+    async saveTransaction() {
+      // Valida o formulário
+      const { valid } = await this.$refs.editFormRef.validate();
+      if (!valid) return;
+
+      this.saving = true;
+      this.saveError = null;
+      this.saveSuccess = false;
+
+      try {
+        const payload = {
+          data: this.editForm.data,
+          modeloTransacao: this.editForm.modeloTransacao,
+          contraParte: this.editForm.contraParte || null,
+          valor: parseFloat(this.editForm.valor),
+          descricao: this.editForm.descricao || null,
+        };
+        console.log(this.editForm.id);
+        console.log(payload);
+
+        await api.updateTransaction(this.editForm.id, payload);
+        
+        this.saveSuccess = true;
+
+        await this.fetchTransactions();
+
+        this.selectedTransaction = {
+          ...this.selectedTransaction,
+          ...payload,
+        };
+
+        setTimeout(() => {
+          this.closeEditDialog();
+        }, 1500);
+
+      } catch (error) {
+        console.error('Erro ao salvar transação:', error);
+        this.saveError = error.response?.data?.message || 'Erro ao salvar a transação. Tente novamente.';
+      } finally {
+        this.saving = false;
       }
     },
 

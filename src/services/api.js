@@ -41,4 +41,7 @@ export default {
   async getTransacaoById(transacaoId) {
     return apiClient.get(`/transacao/${transacaoId}/detalhes`)
   },
+  async updateTransaction(transacaoId, transacaoRequest) {
+    return apiClient.put(`transacao/editaTransacao/${transacaoId}`, transacaoRequest)
+  },
 };
