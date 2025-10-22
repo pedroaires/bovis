@@ -8,6 +8,7 @@ import bovisApp.firstApp.model.enumeration.TransacaoOperacao;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public class TransacaoResponseDTO {
 
@@ -19,9 +20,9 @@ public class TransacaoResponseDTO {
     private TransacaoOperacao operacao;
     private List<Boi> bois;
     private String contraParte;
-    private Transacao transacaoRelacionada;
+    private Long transacaoRelacionadaId;
 
-    public TransacaoResponseDTO(Long id, BigDecimal valor, LocalDate data, String descricao, ModeloTransacao modeloTransacao, TransacaoOperacao operacao, List<Boi> bois, String contraParte, Transacao transacaoRelacionada) {
+    public TransacaoResponseDTO(Long id, BigDecimal valor, LocalDate data, String descricao, ModeloTransacao modeloTransacao, TransacaoOperacao operacao, List<Boi> bois, String contraParte, Long transacaoRelacionadaId) {
         this.id = id;
         this.valor = valor;
         this.data = data;
@@ -30,7 +31,7 @@ public class TransacaoResponseDTO {
         this.operacao = operacao;
         this.bois = bois;
         this.contraParte = contraParte;
-        this.transacaoRelacionada = transacaoRelacionada;
+        this.transacaoRelacionadaId = transacaoRelacionadaId;
     }
 
     public TransacaoResponseDTO(Transacao transacao) {
@@ -41,7 +42,12 @@ public class TransacaoResponseDTO {
         this.modeloTransacao = transacao.getModeloTransacao();
         this.operacao = transacao.getOperacao();
         this.contraParte = transacao.getContraParte();
-        this.transacaoRelacionada = transacao.getTransacaoRelacionada();
+        if (Optional.ofNullable(transacao.getTransacaoRelacionada()).isPresent()){
+            this.transacaoRelacionadaId = transacao.getTransacaoRelacionada().getId();
+        }
+        else{
+            this.transacaoRelacionadaId = null;
+        }
     }
 
     public TransacaoResponseDTO(TransacaoBoi transacaoBoi) {
@@ -51,7 +57,7 @@ public class TransacaoResponseDTO {
         this.modeloTransacao = transacaoBoi.getTransacao().getModeloTransacao();
         this.operacao = transacaoBoi.getTransacao().getOperacao();
         this.contraParte = transacaoBoi.getTransacao().getContraParte();
-        this.transacaoRelacionada = transacaoBoi.getTransacao().getTransacaoRelacionada();
+        this.transacaoRelacionadaId = transacaoBoi.getTransacao().getTransacaoRelacionada().getId();
     }
 
     public Long getId() {
@@ -118,11 +124,11 @@ public class TransacaoResponseDTO {
         this.contraParte = contraParte;
     }
 
-    public Transacao getTransacaoRelacionada() {
-        return transacaoRelacionada;
+    public Long getTransacaoRelacionada() {
+        return transacaoRelacionadaId;
     }
 
-    public void setTransacaoRelacionada(Transacao transacaoRelacionada) {
-        this.transacaoRelacionada = transacaoRelacionada;
+    public void setTransacaoRelacionada(Long transacaoRelacionadaId) {
+        this.transacaoRelacionadaId = transacaoRelacionadaId;
     }
 }

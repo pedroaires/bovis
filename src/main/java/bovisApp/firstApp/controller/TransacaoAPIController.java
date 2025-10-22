@@ -2,6 +2,7 @@ package bovisApp.firstApp.controller;
 
 
 import bovisApp.firstApp.DTO.transacao.CompraRequestDTO;
+import bovisApp.firstApp.DTO.transacao.TransacaoDetalhadaCompletaDTO;
 import bovisApp.firstApp.DTO.transacao.TransacaoResponseDTO;
 import bovisApp.firstApp.DTO.transacao.VendaRequestDTO;
 import bovisApp.firstApp.service.TransacaoService;
@@ -28,12 +29,22 @@ public class TransacaoAPIController {
         return responseList;
     }
 
-    @GetMapping(value = "/getTransacaoById")
+    @GetMapping(value = "/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public TransacaoResponseDTO getTransacaoById(@RequestParam Long id){
+    public TransacaoResponseDTO getTransacaoById(@PathVariable Long id){
         TransacaoResponseDTO response = new TransacaoResponseDTO(transacaoService.getTransacaoById(id));
         return response;
     }
+
+    @GetMapping(value = "/{id}/detalhes")
+    @ResponseStatus(HttpStatus.OK)
+    public TransacaoDetalhadaCompletaDTO getTransacaoDetalhesById(
+            @PathVariable Long id
+    ){
+        TransacaoDetalhadaCompletaDTO response = new TransacaoDetalhadaCompletaDTO(transacaoService.getTransacaoDetalhadaById(id));
+        return response;
+    }
+
 
     @PostMapping(value = "/cadastraCompra")
     @ResponseStatus(HttpStatus.CREATED)

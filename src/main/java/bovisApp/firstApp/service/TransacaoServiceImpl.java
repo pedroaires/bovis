@@ -102,6 +102,12 @@ public class TransacaoServiceImpl implements TransacaoService{
         return transacao;
     }
 
+    @Override
+    public Transacao getTransacaoDetalhadaById(Long id) {
+        return transacaoRepository.findDetalhesById(id)
+                .orElseThrow(() -> new TransacaoNaoEncontradaException(id));
+    }
+
 
     private Transacao criarTransacao(
             TransacaoRequestDTO dto,

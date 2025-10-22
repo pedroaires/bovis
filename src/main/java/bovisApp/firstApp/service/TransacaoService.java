@@ -19,4 +19,6 @@ public interface TransacaoService {
     Transacao registraVenda(VendaRequestDTO vendaRequestDTO);
 
     Transacao deletaTransacao(Long id);
+
+    Transacao getTransacaoDetalhadaById(Long id);
 }
