@@ -1,5 +1,6 @@
 package bovisApp.firstApp.service;
 
+import bovisApp.firstApp.DTO.pesagem.PesagemAgrupadaDTO;
 import bovisApp.firstApp.DTO.pesagem.PesagemRequestDTO;
 import bovisApp.firstApp.DTO.pesagem.PesagemTransacaoRequestDTO;
 import bovisApp.firstApp.exception.pesagem.PesagemInvalidaException;
@@ -10,6 +11,7 @@ import bovisApp.firstApp.model.Pesagem;
 import bovisApp.firstApp.repository.PesagemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -136,6 +138,37 @@ public class PesagemServiceImpl implements PesagemService{
 
         }
         return pesagens;
+    }
+
+    @Override
+    public List<PesagemAgrupadaDTO> getAgrupadasPorData() {
+        return pesagemRepository.findPesagensAgrupadasPorData();
+    }
+
+    @Override
+    public List<Pesagem> getPesagensPorDataDetalhada(LocalDate data) {
+
+        return pesagemRepository.findByDataOrderByDataDesc(data);
+    }
+
+    @Override
+    @Transactional
+    public List<Pesagem> editaPesagensEmLotePorData(LocalDate data, LocalDate novaData) {
+        //TODO: VERIFICAR DEPENDÊNCIA COM TRANSACAO, POIS NÃO DEVE SER PERMITIDO DELETAR OU EDITAR DATA QUANDO
+        // A PESAGEM ESTA RELACIONADA A UMA TRANSACAO POIS IRIA MUDAR A SEMÂNTICA
+        if(novaData == null) throw new PesagemInvalidaException("Nova data não pode ser nula");
+
+        List<Pesagem> pesagens = pesagemRepository.findByDataOrderByDataDesc(data);
+        pesagens.stream().forEach(pesagem -> pesagem.setData(novaData));
+        return pesagemRepository.saveAll(pesagens);
+    }
+
+    @Override
+    public List<Pesagem> deletaPesagensEmLotePorData(LocalDate data) {
+        List<Pesagem> pesagens = pesagemRepository.findByDataOrderByDataDesc(data);
+        pesagemRepository.deleteAll(pesagens);
+        return pesagens;
+
     }
 
     public void validaPesagemDTO(PesagemRequestDTO dto){

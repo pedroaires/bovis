@@ -49,4 +49,10 @@ public class Medicacao {
     public Long getId() {
         return id;
     }
+
+
+    @Override
+    public String toString() {
+        return this.nome;
+    }
 }
