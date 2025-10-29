@@ -44,4 +44,21 @@ export default {
   async updateTransaction(transacaoId, transacaoRequest) {
     return apiClient.put(`transacao/editaTransacao/${transacaoId}`, transacaoRequest)
   },
+  async fetchGroupedWeighings() {
+    return apiClient.get(`pesagem/agrupadas`)
+  },
+  async fetchIndividualWeighingsByDate(date) {
+    return apiClient.get(`pesagem/agrupadas/${date}`)
+  },
+  async updateGroupedWeighingDate(oldDate, newDate){
+    return apiClient.put(`pesagem/agrupadas/${oldDate}`, {novaData: newDate})
+  },
+  async updateIndividualWeighing(pesagemId, payload){
+    return apiClient.put(`pesagem/editaPesagem/${pesagemId}`, payload)
+  },
+  async deleteGroupedWeighing(data){
+    return apiClient.delete(`pesagem/agrupadas/${data}`)
+  }
+  
+  
 };

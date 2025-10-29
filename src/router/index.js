@@ -6,6 +6,7 @@ import UploadPurchaseView from '@/views/UploadPurchaseView.vue';
 import SellCattleView from '@/views/SellCattleView.vue';
 import RegisterWeighingView from '@/views/RegisterWeighingView.vue';
 import CattlePerformanceSummary from '@/views/CattlePerformanceView.vue';
+import WeighingGroupView from '@/views/WeighingGroupView.vue';
 const routes = [
   {
     path: '/',
@@ -25,6 +26,11 @@ const routes = [
         path: '/transactions-visualization',
         name: 'TransactionsVisualization',
         component: TransactionVisualizationView,
+      },
+      {
+        path: '/weighings',
+        name: 'WeighingsGroupView',
+        component: WeighingGroupView,
       },
       {
         path: '/register-purchase',

@@ -39,6 +39,12 @@
               title="Registrar Pesagem" 
               prepend-icon="mdi-weight-kilogram"
               />
+              <v-list-item 
+              link 
+              to="/weighings" 
+              title="Pesagens" 
+              prepend-icon="mdi-weight-kilogram"
+              />
       </v-list>
     </v-navigation-drawer>
 
