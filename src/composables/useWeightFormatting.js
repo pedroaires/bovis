@@ -1,5 +1,11 @@
 export function useWeightFormatting() {
     
+    const formatDate = (dateString) => {
+        if (!dateString) return '—';
+        const date = new Date(dateString + 'T00:00:00'); 
+        return date.toLocaleDateString('pt-BR');
+    };
+
     const formatDateShort = (dateString) => {
         if (!dateString) return '—';
         // Adiciona T00:00:00 para garantir que a data seja interpretada como local
@@ -49,6 +55,7 @@ export function useWeightFormatting() {
 
     
     return {
+        formatDate,
         formatDateShort,
         formatPeso,
         formatPesoKg,
