@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const apiClient = axios.create({
-  baseURL: 'http://192.168.1.102:8080/api',
+  baseURL: 'http://192.168.1.101:8080/api',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -58,7 +58,9 @@ export default {
   },
   async deleteGroupedWeighing(data){
     return apiClient.delete(`pesagem/agrupadas/${data}`)
-  }
-  
+  },
+  async generateWeightMatrix(request) {
+        return apiClient.post('pesagem/matriz', request);
+    },
   
 };
