@@ -111,8 +111,18 @@ public class PesagemAPIController {
     }
 
     @DeleteMapping(value = "/deletaPesagem")
+    @ResponseStatus(HttpStatus.OK)
     public PesagemResponseDTO deletaPesagem(Long id){
         PesagemResponseDTO pesagemResponseDTO = new PesagemResponseDTO(pesagemService.deletaPesagem(id));
         return pesagemResponseDTO;
+    }
+
+    @PostMapping("/matriz")
+    @ResponseStatus(HttpStatus.OK)
+    public MatrizPesagemResponseDTO gerarMatrizPeso(
+            @RequestBody MatrizPesagemRequestDTO request) {
+
+        MatrizPesagemResponseDTO response = pesagemService.gerarMatrizPeso(request);
+        return response;
     }
 }

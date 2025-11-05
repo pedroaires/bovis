@@ -4,6 +4,7 @@ import bovisApp.firstApp.DTO.pesagem.PesagemAgrupadaDTO;
 import bovisApp.firstApp.model.Pesagem;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -30,4 +31,6 @@ public interface PesagemRepository extends JpaRepository<Pesagem, Long> {
             "GROUP BY p.data " +
             "ORDER BY p.data DESC")
     List<PesagemAgrupadaDTO> findPesagensAgrupadasPorData();
+
+    List<Pesagem> findByDataIn(List<LocalDate> dates);
 }

@@ -1,13 +1,10 @@
 package bovisApp.firstApp.service;
 
-import bovisApp.firstApp.DTO.pesagem.PesagemAgrupadaDTO;
-import bovisApp.firstApp.DTO.pesagem.PesagemRequestDTO;
-import bovisApp.firstApp.DTO.pesagem.PesagemTransacaoRequestDTO;
+import bovisApp.firstApp.DTO.pesagem.*;
 import bovisApp.firstApp.model.Boi;
 import bovisApp.firstApp.model.Pesagem;
 
 import java.time.LocalDate;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,4 +36,6 @@ public interface PesagemService {
     List<Pesagem> editaPesagensEmLotePorData(LocalDate data, LocalDate novaData);
 
     List<Pesagem> deletaPesagensEmLotePorData(LocalDate data);
+
+    MatrizPesagemResponseDTO gerarMatrizPeso(MatrizPesagemRequestDTO request);
 }
