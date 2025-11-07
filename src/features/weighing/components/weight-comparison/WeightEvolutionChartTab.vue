@@ -146,7 +146,7 @@
 
 <script setup>
 import { ref, computed, watch, nextTick } from 'vue';
-import { useWeightFormatting } from '@/composables/useWeightFormatting';
+import { useWeightFormatting } from '@/features/weighing/composables/useWeightFormatting';
 import { useTheme } from 'vuetify';
 
 const props = defineProps({

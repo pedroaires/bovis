@@ -210,7 +210,7 @@ import WeighingDetailDialog from '@/features/weighing/components/weight-manageme
 import WeighingGroupEditDialog from '@/features/weighing/components/weight-management/WeighingGroupEditDialog.vue';
 import WeightEvolutionDialog from '@/features/weighing/components/weight-comparison/WeightEvolutionDialog.vue';
 import WeightComparisonBar from '@/features/weighing/components/weight-comparison/WeightComparisonBar.vue';
-import { useWeightFormatting } from '@/composables/useWeightFormatting';
+import { useWeightFormatting } from '@/features/weighing/composables/useWeightFormatting';
 import api from '@/services/api'
 
 const {

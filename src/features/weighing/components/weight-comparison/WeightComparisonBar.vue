@@ -109,8 +109,8 @@
 
 <script setup>
 import { computed, defineEmits } from 'vue';
-import { useWeightComparison } from '@/composables/useWeightComparison';
-import { useWeightFormatting } from '@/composables/useWeightFormatting';
+import { useWeightComparison } from '@/features/weighing/composables/useWeightComparison';
+import { useWeightFormatting } from '@/features/weighing/composables/useWeightFormatting';
 const props = defineProps({
     selectedDates: {
         type: Object,

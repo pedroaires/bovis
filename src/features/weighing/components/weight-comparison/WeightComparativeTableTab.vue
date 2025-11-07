@@ -109,7 +109,7 @@
 <script setup>
 import api from '@/services/api';
 import { ref, computed, defineEmits } from 'vue';
-import { useWeightFormatting } from '@/composables/useWeightFormatting';
+import { useWeightFormatting } from '@/features/weighing/composables/useWeightFormatting';
 const emit = defineEmits(['error']);
 const props = defineProps({
     matrixData: {

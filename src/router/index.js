@@ -1,12 +1,12 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import DefaultLayout from '@/layouts/DefaultLayout.vue';
-import HomeView from '@/views/HomeView.vue';
-import TransactionVisualizationView from '@/views/TransactionsVisualizationView.vue';
-import UploadPurchaseView from '@/views/UploadPurchaseView.vue';
-import SellCattleView from '@/views/SellCattleView.vue';
-import RegisterWeighingView from '@/views/RegisterWeighingView.vue';
-import CattlePerformanceSummary from '@/views/CattlePerformanceView.vue';
-import WeighingGroupView from '@/views/WeighingGroupView.vue';
+import DefaultLayout from '@/shared/layouts/DefaultLayout.vue';
+import HomeView from '@/features/cattle/views/HomeView.vue';
+import TransactionVisualizationView from '@/features/transaction/views/TransactionsVisualizationView.vue';
+import UploadPurchaseView from '@/features/transaction/views/UploadPurchaseView.vue';
+import SellCattleView from '@/features/transaction/views/SellCattleView.vue';
+import RegisterWeighingView from '@/features/weighing/views/RegisterWeighingView.vue';
+import CattlePerformanceSummary from '@/features/cattle/views/CattlePerformanceView.vue';
+import WeighingGroupView from '@/features/weighing/views/WeighingGroupView.vue';
 const routes = [
   {
     path: '/',

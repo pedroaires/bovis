@@ -170,7 +170,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'; 
-import { useWeightFormatting } from '@/composables/useWeightFormatting';
+import { useWeightFormatting } from '@/features/weighing/composables/useWeightFormatting';
 
 
 const props = defineProps({
