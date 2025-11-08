@@ -19,89 +19,71 @@
       :loading="loading"
       item-value="id"
       :show-select="selectable"
-      v-model="internalSelected"
+      v-model="selected"
       :items-per-page="itemsPerPage"
       :return-object="true"
     >
       <!-- célula customizada: estado -->
       <template #[`item.${estadoKey}`]="{ item }">
-        <v-chip :color="statusColor(item[estadoKey])" size="small">
+        <v-chip :color="getColor(item[estadoKey])" size="small">
           {{ item[estadoKey] }}
         </v-chip>
       </template>
     </v-data-table>
 
-    <slot name="actions" :selected="internalSelected"></slot>
+    <slot name="actions" :selected="selected"></slot>
   </div>
 </template>
+<script setup>
+import { computed } from 'vue';
+import { useTableFilters } from '../composables/useTableFilters';
+import { useTableSelection } from '../composables/useTableSelection';
+import { useCattleStatus } from '../composables/useCattleStatus';
 
-<script>
-export default {
-  name: 'CattleList',
-  props: {
-    title: { type: String, default: 'Lista de Gado' },
-    items: { type: Array, default: () => [] },
-    loading: { type: Boolean, default: false },
 
-    // seleção
-    selectable: { type: Boolean, default: false },
-    modelValue: { type: Array, default: () => [] }, 
+const props = defineProps({
+  title: { type: String, default: 'Lista de Gado' },
+  items: { type: Array, default: () => [] },
+  loading: { type: Boolean, default: false },
 
-    // busca/filtro
-    enableSearch: { type: Boolean, default: true },
-    filterEstado: { type: String, default: '' },        // ex: 'NA_FAZENDA'
-    estadoKey: { type: String, default: 'estadoBoi' },  // desacoplado do nome do campo
+  selectable: { type: Boolean, default: false },
+  modelValue: { type: Array, default: () => [] },
 
-    // UI
-    itemsPerPage: { type: Number, default: 10 },
+  enableSearch: { type: Boolean, default: true },
+  filterEstado: { type: String, default: '' },       
+  estadoKey: { type: String, default: 'estadoBoi' },  
 
-    // headers (permite custom externo; default mantém os seus)
-    headersProp: { type: Array, default: null },
+  itemsPerPage: { type: Number, default: 10 },
 
-    // mapa de cores por estado (desacoplado)
-    statusColorMap: {
-      type: Object,
-      default: () => ({
-        NA_FAZENDA: 'success',
-        VENDIDO: 'warning',
-        ABATIDO: 'error',
-      }),
-    },
-  },
-  emits: ['update:modelValue'],
-  data() {
-    return {
-      search: '',
-      defaultHeaders: [
-        { title: 'ID', key: 'id' },
-        { title: 'Número', key: 'numero' },
-        { title: 'Raça', key: 'raca' },
-        { title: 'Estado do Boi', key: 'estadoBoi' },
-        { title: 'Data Última Pesagem', key: 'dataUltimaPesagem' },
-        { title: 'Último Peso', key: 'peso' },
-      ],
-    }
-  },
-  computed: {
-    headers() {
-      return this.headersProp ?? this.defaultHeaders
-    },
-    internalSelected: {
-      get() { return this.modelValue },
-      set(v) { this.$emit('update:modelValue', v) },
-    },
-    filteredItems() {
-      if (!this.filterEstado) return this.items
-      return this.items.filter(x => x?.[this.estadoKey] === this.filterEstado)
-    },
-  },
-  methods: {
-    statusColor(value) {
-      return this.statusColorMap?.[value] ?? 'default'
-    },
-  },
-}
+  headersProp: { type: Array, default: null },
+
+  statusColorMap: { type: Object, default: () => ({}) },
+});
+
+const emit = defineEmits(['update:modelValue']);
+
+const itemsRef = computed(() => props.items);
+const { search, filteredItems } = useTableFilters(itemsRef, {
+  filterKey: computed(() => props.estadoKey),
+  filterValue: computed(() => props.filterEstado),
+});
+
+const { selected } = useTableSelection(props, emit);
+const { getColor } = useCattleStatus(props.statusColorMap);
+
+
+const defaultHeaders = [
+  { title: 'ID', key: 'id' },
+  { title: 'Número', key: 'numero' },
+  { title: 'Raça', key: 'raca' },
+  { title: 'Estado do Boi', key: 'estadoBoi' },
+  { title: 'Data Última Pesagem', key: 'dataUltimaPesagem' },
+  { title: 'Último Peso', key: 'peso' },
+];
+
+const headers = computed(() => {
+  return props.headersProp ?? defaultHeaders;
+});
+
+
 </script>
-
-<style scoped>
-</style>

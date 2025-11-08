@@ -32,6 +32,14 @@
       <v-col cols="12">
         <v-card class="pa-4">
           <v-card-text>
+            <v-alert
+              v-if="error"
+              type="error"
+              class="mb-4"
+              title="Erro ao carregar"
+            >
+              Não foi possível buscar os dados do gado. Por favor, tente novamente mais tarde.
+            </v-alert>
              <CattleList
               title="Lista de Gado"
               :items="cattle"
@@ -47,20 +55,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
 import CattleList from '@/shared/components/CattleList.vue'
-import api from '@/services/api.js'
+import { useActiveCattle } from '../composables/useActiveCattle'
 
-const loading = ref(false)
-const cattle = ref([])
-
-onMounted(async () => {
-  loading.value = true
-  try {
-    const resp = await api.getActiveCattleWithWeight()
-    cattle.value = resp.data ?? []
-  } finally {
-    loading.value = false
-  }
-})
+const { cattle, loading, error } = useActiveCattle()
 </script>
