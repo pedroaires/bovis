@@ -76,103 +76,92 @@
         </v-data-table-server>
     </div>
 </template>
+<script setup>
+import { ref, computed, watch } from 'vue';
 
-<script>
-export default {
-    name: 'FilteredDataTable',
-    props: {
-        title: {
-            type: String,
-            required: true
-        },
-        headers: {
-            type: Array,
-            required: true
-        },
-        items: {
-            type: Array,
-            default: () => []
-        },
-        totalItems: {
-            type: Number,
-            default: 0
-        },
-        loading: {
-            type: Boolean,
-            default: false
-        },
-        filters: {
-            type: Object,
-            default: () => ({})
-        },
-        filterLabels: {
-            type: Object,
-            default: () => ({})
-        },
-        filterFormatters: {
-            type: Object,
-            default: () => ({})
-        }
+const props = defineProps({
+    title: {
+        type: String,
+        required: true
     },
-    emits: ['update:options', 'apply-filters'],
-    data() {
-        return {
-            showFilters: false,
-            internalFilters: { ...this.filters }
-        }
+    headers: {
+        type: Array,
+        required: true
     },
-    computed: {
-        activeFiltersCount() {
-            return Object.values(this.internalFilters).filter(v => v !== null && v !== '').length
-        },
-        activeFilterChips() {
-            const chips = {}
-
-            Object.entries(this.internalFilters).forEach(([key, value]) => {
-                if (value !== null && value !== '') {
-                    const label = this.filterLabels[key] || key
-                    let displayValue = value
-
-                    // Usar formatter customizado se existir
-                    if (this.filterFormatters[key]) {
-                        displayValue = this.filterFormatters[key](value)
-                    }
-
-                    chips[key] = { label, value: displayValue }
-                }
-            })
-
-            return chips
-        }
+    items: {
+        type: Array,
+        default: () => []
     },
-    watch: {
-        filters: {
-            handler(newVal) {
-                this.internalFilters = { ...newVal }
-            },
-            deep: true
-        }
+    totalItems: {
+        type: Number,
+        default: 0
     },
-    methods: {
-        applyFilters() {
-            this.$emit('apply-filters', this.internalFilters)
-        },
-        clearFilter(key) {
-            this.internalFilters[key] = null
-            this.applyFilters()
-        },
-        clearAllFilters() {
-            Object.keys(this.internalFilters).forEach(key => {
-                this.internalFilters[key] = null
-            })
-            this.applyFilters()
-        },
-        handleOptionsUpdate(options) {
-            this.$emit('update:options', options)
-        }
+    loading: {
+        type: Boolean,
+        default: false
+    },
+    filters: {
+        type: Object,
+        default: () => ({})
+    },
+    filterLabels: {
+        type: Object,
+        default: () => ({})
+    },
+    filterFormatters: {
+        type: Object,
+        default: () => ({})
     }
+})
+const emit = defineEmits(['update:options', 'apply-filters']);
+
+const showFilters = ref(false)
+const internalFilters = ref({ ...props.filters });
+
+const activeFiltersCount = computed(() => {
+    return Object.values(internalFilters.value).filter(v => v !== null && v !== '').length
+})
+const activeFilterChips = computed(() => {
+    const chips = {}
+
+    Object.entries(internalFilters.value).forEach(([key, value]) => {
+        if (value !== null && value !== '') {
+            const label = props.filterLabels[key] || key
+            let displayValue = value
+
+            // Usar formatter customizado se existir
+            if (props.filterFormatters[key]) {
+                displayValue = props.filterFormatters[key](value)
+            }
+
+            chips[key] = { label, value: displayValue }
+        }
+    })
+
+    return chips
+})
+watch(props.filters, (newVal) => {
+    internalFilters.value = { ...newVal }
+}, {deep: true})
+
+function applyFilters() {
+    emit('apply-filters', internalFilters.value)
+}
+function clearFilter(key) {
+    internalFilters.value[key] = null
+    applyFilters()
+}
+function clearAllFilters() {
+    Object.keys(internalFilters.value).forEach(key => {
+        internalFilters.value[key] = null
+    })
+    applyFilters()
+}
+function handleOptionsUpdate(options) {
+    emit('update:options', options)
 }
 </script>
+
 
 <style scoped>
 h1 {

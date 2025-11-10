@@ -1,5 +1,5 @@
 <template>
-    <FilteredDataTable
+    <ServerDataTable
         title="Desempenho do Gado"
         :headers="headers"
         :items="cattleSummary"
@@ -139,7 +139,7 @@
                 @click="openDetails(item)"
             />
         </template>
-    </FilteredDataTable>
+    </ServerDataTable>
 
     <!-- Modal de Detalhes -->
     <CattleDetailModal
@@ -148,12 +148,12 @@
     />
 </template>
 <script setup>
-import FilteredDataTable from '@/features/cattle/components/FilteredDataTable.vue';
 import CattleDetailModal from '@/features/cattle/components/CattleDetailModal.vue';
 import { useWeightFormatting } from '@/features/weighing/composables/useWeightFormatting';
 import { useCattlePerformance } from '../composables/useCattlePerformance';
 import { useCattleFilters } from '../composables/useCattleFilters';
 import { ref, onMounted } from 'vue';
+import ServerDataTable from '@/shared/components/ServerDataTable.vue';
 
 const {
     formatGMD,
