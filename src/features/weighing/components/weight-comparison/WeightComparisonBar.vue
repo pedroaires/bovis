@@ -108,7 +108,7 @@
 </template>
 
 <script setup>
-import { computed, defineEmits } from 'vue';
+import { computed } from 'vue';
 import { useWeightComparison } from '@/features/weighing/composables/useWeightComparison';
 import { useWeightFormatting } from '@/features/weighing/composables/useWeightFormatting';
 const props = defineProps({

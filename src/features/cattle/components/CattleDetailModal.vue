@@ -1,5 +1,5 @@
 <template>
-    <v-dialog :model-value="modelValue" @update:model-value="$emit('update:modelValue', $event)" max-width="900px">
+    <v-dialog :model-value="props.modelValue" @update:model-value="$emit('update:modelValue', $event)" max-width="900px">
         <v-card v-if="cattle">
             <v-card-title class="d-flex justify-space-between align-center">
                 <div>
@@ -9,7 +9,7 @@
                 <v-btn
                     icon="mdi-close"
                     variant="text"
-                    @click="$emit('close')"
+                    @click="emit('close')"
                 ></v-btn>
             </v-card-title>
 
@@ -20,7 +20,7 @@
                 <v-row class="mb-4">
                     <v-col cols="3">
                         <div class="text-caption text-grey">Estado</div>
-                        <div class="text-body-1">{{ cattle.estadoBoi }}</div>
+                        <v-chip :color="getStatusColor(cattle.estadoBoi)" size="small">{{ cattle.estadoBoi }}</v-chip>
                     </v-col>
                     <v-col cols="3">
                         <div class="text-caption text-grey">Peso Atual</div>
@@ -28,13 +28,13 @@
                     </v-col>
                     <v-col cols="3">
                         <div class="text-caption text-grey">Última Pesagem</div>
-                        <div class="text-body-1">{{ cattle.ultimaPesagem }}</div>
+                        <div class="text-body-1">{{ formatDate(cattle.ultimaPesagem) }}</div>
                     </v-col>
                     <v-col cols="3">
                         <div class="text-caption text-grey">GMD Médio</div>
                         <div class="text-body-1">
-                            <v-chip :color="getGmdColor(cattle.gmd)" size="small">
-                                {{ formatGmd(cattle.gmd) }}
+                            <v-chip :color="getGMDColor(cattle.gmd)" size="small">
+                                {{ formatGMD(cattle.gmd) }}
                             </v-chip>
                         </div>
                     </v-col>
@@ -65,7 +65,7 @@
                                 <td>{{ formatPeso(pesagem.peso) }}</td>
                                 <td>
                                     <span v-if="pesagem.gmd !== null">
-                                        {{ formatGmd(pesagem.gmd) }}
+                                        {{ formatGMD(pesagem.gmd) }}
                                     </span>
                                     <span v-else class="text-grey">—</span>
                                 </td>
@@ -81,107 +81,84 @@
         </v-card>
     </v-dialog>
 </template>
-
-<script>
+<script setup>
+import { ref, watch } from 'vue';
 import WeightChart from '@/features/cattle/components/WeightChart.vue';
+import { useWeightFormatting } from '@/features/weighing/composables/useWeightFormatting';
+import { useCattleStatus } from '@/shared/composables/useCattleStatus';
 import api from '@/services/api.js';
 
-export default {
-    name: 'CattleDetailModal',
-    components: {
-        WeightChart
+const props = defineProps({
+    modelValue: {
+        type: Boolean, 
+        default: false
     },
-    props: {
-        modelValue: {
-            type: Boolean,
-            default: false
-        },
-        cattle: {
-            type: Object,
-            default: null
-        }
-    },
-    emits: ['update:modelValue', 'close'],
-    data() {
-        return {
-            weightHistory: [],
-            loading: false
-        }
-    },
-    watch: {
-        modelValue(newVal) {
-            if (newVal && this.cattle) {
-                this.fetchWeightHistory()
-            }
-        }
-    },
-    methods: {
-        async fetchWeightHistory() {
-            if (!this.cattle?.id) return
-            
-            try {
-                this.loading = true
-                const response = await api.fetchCattleWeightHistoryById(this.cattle.id)
-                
-                // Ordenar por data (mais antiga primeiro)
-                const pesagens = response.data.sort((a, b) => 
-                    new Date(a.data) - new Date(b.data)
-                )
-                
-                // Calcular GMD entre pesagens consecutivas
-                this.weightHistory = pesagens.map((pesagem, index) => {
-                    let gmd = null
-                    
-                    if (index > 0) {
-                        const pesoAtual = Number(pesagem.peso)
-                        const pesoAnterior = Number(pesagens[index - 1].peso)
-                        const dataAtual = new Date(pesagem.data)
-                        const dataAnterior = new Date(pesagens[index - 1].data)
-                        
-                        const diferencaDias = Math.floor((dataAtual - dataAnterior) / (1000 * 60 * 60 * 24))
-                        
-                        if (diferencaDias > 0) {
-                            gmd = (pesoAtual - pesoAnterior) / diferencaDias
-                        }
-                    }
-                    
-                    return {
-                        ...pesagem,
-                        gmd: gmd
-                    }
-                })
-            } catch (error) {
-                console.error('Erro ao buscar histórico do boi:', error)
-            } finally {
-                this.loading = false
-            }
-        },
-
-        formatDate(date) {
-            if (!date) return '—'
-            const d = new Date(date)
-            return d.toLocaleDateString('pt-BR')
-        },
-
-        formatPeso(peso) {
-            if (peso === null || peso === undefined) return '—'
-            return `${Number(peso).toFixed(1)} kg`
-        },
-
-        formatGmd(gmd) {
-            if (gmd === null || gmd === undefined) return '—'
-            return `${Number(gmd).toFixed(2)} kg/dia`
-        },
-
-        getGmdColor(gmd) {
-            if (gmd === null || gmd === undefined) return 'grey'
-            const value = Number(gmd)
-            if (value >= 1.2) return 'success'
-            if (value >= 0.8) return 'warning'
-            return 'error'
-        }
+    cattle: {
+        type: Object,
+        default: null
     }
+});
+
+const {
+    formatGMD,
+    getGMDColor,
+    formatDate,
+    formatPeso
+} = useWeightFormatting();
+const {
+    getColor: getStatusColor
+} = useCattleStatus();
+const emit = defineEmits(['update:modelValue', 'close']);
+
+const weightHistory = ref([]);
+const loading = ref(false);
+
+watch(() => props.modelValue, (newVal) => {
+    if (newVal && props.cattle){
+        fetchWeightHistory()
+    }
+})
+async function fetchWeightHistory() {
+    if(!props.cattle?.id) return
+    try {
+    loading.value = true
+    const response = await api.fetchCattleWeightHistoryById(props.cattle.id)
+    
+    // Ordenar por data (mais antiga primeiro)
+    const pesagens = response.data.sort((a, b) => 
+        new Date(a.data) - new Date(b.data)
+    )
+    
+    // Calcular GMD entre pesagens consecutivas
+    weightHistory.value = pesagens.map((pesagem, index) => {
+        let gmd = null
+        
+        if (index > 0) {
+            const pesoAtual = Number(pesagem.peso)
+            const pesoAnterior = Number(pesagens[index - 1].peso)
+            const dataAtual = new Date(pesagem.data)
+            const dataAnterior = new Date(pesagens[index - 1].data)
+            
+            const diferencaDias = Math.floor((dataAtual - dataAnterior) / (1000 * 60 * 60 * 24))
+            
+            if (diferencaDias > 0) {
+                gmd = (pesoAtual - pesoAnterior) / diferencaDias
+            }
+        }
+        
+        return {
+            ...pesagem,
+            gmd: gmd
+        }
+    })
+} catch (error) {
+    console.error('Erro ao buscar histórico do boi:', error)
+} finally {
+    loading.value = false
 }
+    
+}
+
 </script>
 
 <style scoped>
