@@ -9,7 +9,7 @@
                 <v-btn
                     icon="mdi-close"
                     variant="text"
-                    @click="emit('close')"
+                    @click="emit('update:modelValue', false)"
                 ></v-btn>
             </v-card-title>
 
@@ -39,6 +39,9 @@
                         </div>
                     </v-col>
                 </v-row>
+                <v-alert v-if="fetchError" type="error" class="mb-4">
+                    {{ fetchError }}
+                </v-alert>
 
                 <!-- Conteúdo do Histórico -->
                 <div v-if="loading" class="text-center py-8">
@@ -90,10 +93,11 @@
     </v-dialog>
 </template>
 <script setup>
-import { ref, watch, computed } from 'vue';
+import { computed } from 'vue';
 import { useWeightFormatting } from '@/features/weighing/composables/useWeightFormatting';
 import { useCattleStatus } from '@/shared/composables/useCattleStatus';
-import api from '@/services/api.js';
+import { useWeightHistory } from '../composables/useWeightHistory';
+import { useChartConfig } from '../composables/useChartConfig';
 
 const props = defineProps({
     modelValue: {
@@ -105,144 +109,26 @@ const props = defineProps({
         default: null
     }
 });
-
+const cattleId = computed(() => props.cattle?.id);
 const {
     formatGMD,
     getGMDColor,
     formatDate,
-    formatPeso
+    formatPeso,
 } = useWeightFormatting();
 
 const {
     getColor: getStatusColor
 } = useCattleStatus();
 
-const emit = defineEmits(['update:modelValue', 'close']);
-const loading = ref(false);
-const rawWeightHistory = ref([]);
-
-watch(() => props.modelValue, (newVal) => {
-    if (newVal && props.cattle){
-        fetchWeightHistory()
-    }
-})
-async function fetchWeightHistory() {
-    if(!props.cattle?.id) return
-    try {
-        loading.value = true;
-        const response = await api.fetchCattleWeightHistoryById(props.cattle.id);
-        
-        rawWeightHistory.value = response.data.sort((a, b) => 
-            new Date(a.data) - new Date(b.data)
-        );
-    } catch (error) {
-        console.error('Erro ao buscar histórico do boi:', error);
-        rawWeightHistory.value = []; 
-    } finally {
-        loading.value = false;
-    }
-    
-}
-
-const processedData = computed(() => {
-    if (!rawWeightHistory.value || rawWeightHistory.value.length === 0) {
-        return {
-            tableData: [],
-            chartSeries: [],
-            chartCategories: []
-        };
-    }
-
-    const tableData = [];
-    const chartCategories = [];
-    const chartWeights = [];
-
-    for (let i = 0; i < rawWeightHistory.value.length; i++) {
-        const pesagem = rawWeightHistory.value[i];
-        const pesoAtual = Number(pesagem.peso);
-        let gmd = null;
-
-        if (i > 0) {
-            const pesoAnterior = Number(rawWeightHistory.value[i - 1].peso);
-            const dataAtual = new Date(pesagem.data);
-            const dataAnterior = new Date(rawWeightHistory.value[i - 1].data);
-            
-            const diferencaDias = Math.floor((dataAtual - dataAnterior) / (1000 * 60 * 60 * 24));
-            
-            if (diferencaDias > 0) {
-                gmd = (pesoAtual - pesoAnterior) / diferencaDias;
-            }
-        }
-        
-        tableData.push({
-            ...pesagem,
-            gmd: gmd
-        });
-        
-        const d = new Date(pesagem.data);
-        chartCategories.push(d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }));
-        chartWeights.push(pesoAtual);
-    }
-
-    return {
-        tableData: tableData,
-        chartSeries: [{ name: 'Peso', data: chartWeights }],
-        chartCategories: chartCategories
-    };
-});
-
-const chartOptions = computed(() => ({
-    chart: {
-        type: 'area',
-        height: 300,
-        toolbar: { show: false },
-        tooltip: {
-            x: { format: 'dd/MM' }
-        }
-    },
-    fill: {
-        type: 'gradient',
-        gradient: {
-            shadeIntensity: 1,
-            opacityFrom: 0.7,
-            opacityTo: 0.1,
-            stops: [0, 90, 100]
-        }
-    },
-    stroke: {
-        curve: 'smooth',
-        width: 2
-    },
-    markers: {
-        size: 4,
-        strokeWidth: 2,
-        strokeColors: '#fff'
-    },
-    xaxis: {
-        categories: processedData.value.chartCategories, 
-        labels: {
-            rotate: -45,
-            style: { colors: '#666', fontSize: '12px' }
-        }
-    },
-    yaxis: {
-        title: {
-            text: 'Peso (kg)',
-            style: { color: '#666' }
-        },
-        labels: {
-            formatter: (value) => `${value.toFixed(0)} kg`,
-            style: { colors: '#666' }
-        }
-    },
-    grid: {
-        borderColor: '#e0e0e0',
-        strokeDashArray: 4
-    },
-    legend: {
-        show: false
-    }
-}));
+const {
+    processedData,
+    loading,
+    fetchError
+} = useWeightHistory(cattleId);
+const emit = defineEmits(['update:modelValue']);
+const chartCategories = computed(() => processedData.value.chartCategories);
+const { chartOptions } = useChartConfig(chartCategories);
 </script>
 
 <style scoped>

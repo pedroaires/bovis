@@ -145,7 +145,6 @@
     <CattleDetailModal
         v-model="showDetailsDialog"
         :cattle="selectedCattle"
-        @close="showDetailsDialog = false"
     />
 </template>
 <script setup>
