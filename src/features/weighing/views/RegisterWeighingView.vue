@@ -10,14 +10,13 @@
         <v-stepper-window-item :value="1">
           <v-card>
             <v-card-text>
-              <CattleList
+              <ClientDataTable
                 title="Selecionar bois para pesagem"
                 :items="cattle"
+                :headers="headers"
                 :loading="loading"
                 selectable
-                v-model="selected"
-                filter-estado="NA_FAZENDA"
-              >
+                v-model="selected">
                 <template #actions>
                   <div class="mt-4 text-right">
                     <v-btn color="primary" :disabled="!selected.length" @click="toStep2">
@@ -25,7 +24,17 @@
                     </v-btn>
                   </div>
                 </template>
-              </CattleList>
+                <template #[`item.estadoBoi`]="{ item }">
+                  <v-chip
+                  :color="getColor(item.estadoBoi)"
+                  size="small">
+                    {{ item.estadoBoi }}
+                  </v-chip>
+                </template>
+                <template #[`item.dataUltimaPesagem`]="{ item }">
+                  {{ formatDate(item.dataUltimaPesagem) }}
+                </template>
+              </ClientDataTable>
             </v-card-text>
           </v-card>
         </v-stepper-window-item>
@@ -130,9 +139,22 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import CattleList from '@/shared/components/CattleList.vue'
 import api from '@/services/api.js'
+import ClientDataTable from '@/shared/components/ClientDataTable.vue'
+import { useCattleStatus } from '@/shared/composables/useCattleStatus'
+import { useWeightFormatting } from '../composables/useWeightFormatting'
 
+const headers = [
+  { title: 'ID', key: 'id' },
+  { title: 'Número', key: 'numero' },
+  { title: 'Raça', key: 'raca' },
+  { title: 'Estado do Boi', key: 'estadoBoi' },
+  { title: 'Data Última Pesagem', key: 'dataUltimaPesagem' },
+  { title: 'Último Peso', key: 'peso' },
+];
+
+const { formatDate } = useWeightFormatting();
+const { getColor } = useCattleStatus();
 const step = ref(1)
 const loading = ref(false)
 const cattle = ref([])
