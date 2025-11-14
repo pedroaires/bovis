@@ -143,6 +143,8 @@ public class TransacaoServiceImpl implements TransacaoService{
         transacao.setContraParte(dto.getContraParte());
         transacao.setTransacaoBois(transacaoBois);
         transacao.setOperacao(operacao);
+
+        transacaoBois.forEach(tb -> tb.setTransacao(transacao));
         return transacaoRepository.save(transacao);
     }
 
