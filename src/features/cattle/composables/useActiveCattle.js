@@ -1,4 +1,4 @@
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import api from '@/services/api.js'
 
 export function useActiveCattle() {
@@ -19,8 +19,6 @@ export function useActiveCattle() {
       loading.value = false
     }
   }
-
-  onMounted(fetchActiveCattle)
 
   return {
     cattle,

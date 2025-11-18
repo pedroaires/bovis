@@ -65,12 +65,13 @@
 </template>
 
 <script setup>
+import { onMounted } from 'vue';
 import { useActiveCattle } from '../composables/useActiveCattle'
 import { useCattleStatus } from '@/shared/composables/useCattleStatus';
 import { useWeightFormatting } from '@/features/weighing/composables/useWeightFormatting';
 import ClientDataTable from '@/shared/components/ClientDataTable.vue';
 const { getColor } = useCattleStatus();
-const { cattle, loading, error } = useActiveCattle();
+const { cattle, loading, error, fetchActiveCattle } = useActiveCattle();
 const { formatDate } = useWeightFormatting();
 const headers = [
   { title: 'ID', key: 'id' },
@@ -80,4 +81,7 @@ const headers = [
   { title: 'Data Última Pesagem', key: 'dataUltimaPesagem' },
   { title: 'Último Peso', key: 'peso' },
 ];
+onMounted(async () => {
+  await fetchActiveCattle();
+});
 </script>

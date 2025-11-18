@@ -6,6 +6,14 @@
         <v-stepper-item :value="2" title="Dados da transação" />
       </v-stepper-header>
 
+      <v-alert
+        v-if="fetchCattleError"
+        type="error"
+        class="mb-4"
+        title="Erro ao carregar"
+      >
+        Não foi possível buscar os dados do gado. Por favor, tente novamente mais tarde.
+      </v-alert>
       <v-stepper-window>
         <!-- Passo 1: Seleção -->
         <v-stepper-window-item :value="1">
@@ -46,13 +54,13 @@
           <v-card>
             <v-card-text>
               <v-alert
-                v-if="errorMsg"
+                v-if="error"
                 type="error"
                 class="mb-4"
                 dismissible
-                @click:close="errorMsg = ''"
+                @click:close="error = ''"
               >
-                {{ errorMsg }}
+                {{ error }}
               </v-alert>
 
               <TransacaoForm
@@ -69,7 +77,7 @@
 
                 <v-data-table
                   :headers="itemHeaders"
-                  :items="sellItems"
+                  :items="saleItems"
                   item-key="boiId"
                   :items-per-page="10"
                 >
@@ -98,7 +106,7 @@
 
                 <div class="text-right mt-4">
                   <div class="text-body-2">
-                    Soma dos itens (R$): <b>{{ sumItemsFormatted }}</b>
+                    Soma dos itens (R$): <b>{{ totalValueFormatted }}</b>
                   </div>
                 </div>
               </div>
@@ -111,7 +119,7 @@
                 color="primary"
                 :loading="submitting"
                 :disabled="!canSubmit"
-                @click="submitVenda"
+                @click="handleConfirmVenda"
               >
                 Confirmar Venda
               </v-btn>
@@ -129,37 +137,40 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import api from '@/services/api.js'
 import TransacaoForm from '@/features/transaction/components/TransacaoForm.vue'
 import ClientDataTable from '@/shared/components/ClientDataTable.vue'
 import { useCattleStatus } from '@/shared/composables/useCattleStatus'
 import { useWeightFormatting } from '@/features/weighing/composables/useWeightFormatting'
+import { useActiveCattle } from '@/features/cattle/composables/useActiveCattle';
+import { useRegisterSale } from '../composables/useRegisterSale'
+
+const { getColor } = useCattleStatus();
+const { formatDate } = useWeightFormatting();
+
+
+const snackbar = ref({ show: false, text: '' })
+
+const { 
+  fetchActiveCattle, 
+  loading, 
+  cattle,
+  error: fetchCattleError
+} = useActiveCattle();
+
+const {
+  form,
+  saleItems,
+  totalValueFormatted,
+  submitting,
+  error,
+  createFromSelection,
+  normalizePeso,
+  normalizeValor,
+  submit
+} = useRegisterSale();
 
 const step = ref(1)
-const loading = ref(false)
-const cattle = ref([])
 const selected = ref([])
-
-const submitting = ref(false)
-const snackbar = ref({ show: false, text: '' })
-const errorMsg = ref('')
-const sellItems = ref([])
-
-const form = ref({
-  data: '',
-  descricao: '',
-  modeloTransacao: 'PESO',
-  contraParte: '',
-  valorTotal: '',
-})
-const {
-  getColor
-} = useCattleStatus();
-
-const {
-  formatDate
-} = useWeightFormatting();
-
 const headers = [
   { title: 'ID', key: 'id' },
   { title: 'Número', key: 'numero' },
@@ -180,110 +191,30 @@ const itemHeaders = [
 
 
 onMounted(async () => {
-  await fetchCattle()
+  await fetchActiveCattle()
 })
 
-async function fetchCattle() {
-  loading.value = true
-  try {
-    const resp = await api.getActiveCattleWithWeight()
-    cattle.value = resp.data ?? []
-  } catch (e) {
-    console.error(e)
-  } finally {
-    loading.value = false
-  }
-}
 
 function toStep2() {
-  const sel = Array.isArray(selected.value) ? selected.value.filter(Boolean) : []
-  const byId = new Map(cattle.value.map(x => [x.id, x]))
-  sellItems.value = sel.map(s => {
-    const c = (typeof s === 'object' && s !== null) ? s : byId.get(s)
-    if (!c) return null
-    return {
-      boiId: c.id,
-      numero: c.numero,
-      raca: c.raca,
-      valor: null,
-      peso: c.peso ?? null,
-      valorStr: '',
-      pesoStr: c.peso != null ? String(c.peso) : '',
-    }
-  }).filter(Boolean)
-
-  if (!sellItems.value.length) {
-    errorMsg.value = 'Seleção inválida. Tente selecionar novamente.'
+  const hasItems = createFromSelection(selected.value, cattle.value)
+  if(!hasItems){
+    error.value = 'Seleção inválida. Tente selecionar novamente.'
     return
   }
-
   step.value = 2
 }
-function parseDecimal(s) {
-  if (s === null || s === undefined || s === '') return null
-  const n = Number(String(s).replace(',', '.'))
-  return Number.isFinite(n) ? n : null
-}
 
-function normalizeValor(item) {
-  item.valor = parseDecimal(item.valorStr)
-  item.valorStr = item.valor != null ? String(item.valor) : ''
-}
-
-function normalizePeso(item) {
-  item.peso = parseDecimal(item.pesoStr)
-  item.pesoStr = item.peso != null ? String(item.peso) : ''
-}
-
-const sumItems = computed(() =>
-  sellItems.value.reduce((acc, it) => acc + (it.valor ?? 0), 0)
-)
-const sumItemsFormatted = computed(() => sumItems.value.toFixed(2))
-
-const canSubmit = computed(() => sellItems.value.length > 0)
-
-async function submitVenda() {
+async function handleConfirmVenda() {
   const ok = await txFormRef.value?.validate()
   if (!ok) return
 
-  try {
-    submitting.value = true
-    errorMsg.value = ''
-
-    const total = form.value.valorTotal !== ''
-      ? parseDecimal(form.value.valorTotal)
-      : sumItems.value
-
-    const vendaBoiDTOS = sellItems.value.map(it => ({
-      boiId: it.boiId,
-      valor: it.valor,
-      pesagemDTO: {
-        peso: it.peso
-      },
-    }))
-
-    const payload = {
-      valor: total,
-      data: String(form.value.data).slice(0, 10),
-      descricao: form.value.descricao ?? '',
-      modeloTransacao: form.value.modeloTransacao,
-      contraParte: form.value.contraParte,
-      vendaBoiDTOS,
-    }
-    await api.createVenda(payload)
+  await submit(() => {
     snackbar.value = { show: true, text: 'Venda cadastrada com sucesso.' }
-
-    // reset e recarrega a lista
     step.value = 1
     selected.value = []
-    sellItems.value = []
-    form.value = { data: '', descricao: '', modeloTransacao: 'PESO', contraParte: '', valorTotal: '' }
-    await fetchCattle()
-  } catch (e) {
-    console.error('createVenda error:', e?.response?.data || e)
-    errorMsg.value = e?.response?.data?.message || 'Falha ao cadastrar a venda.'
-  } finally {
-    submitting.value = false
-  }
+    fetchActiveCattle() 
+  })
 }
+
+const canSubmit = computed(() => saleItems.value.length > 0)
 </script>
