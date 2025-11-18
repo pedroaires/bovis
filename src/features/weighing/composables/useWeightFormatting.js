@@ -53,6 +53,10 @@ export function useWeightFormatting() {
         return ganho >= 0 ? 'text-success' : 'text-error';
     };
 
+    function formatCurrency(value) {
+        if (value == null) return '0,00';
+        return Number(value).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    }
     
     return {
         formatDate,
@@ -64,5 +68,6 @@ export function useWeightFormatting() {
         calculateDaysBetween,
         getGMDColor,
         getGainClass,
+        formatCurrency
     };
 }

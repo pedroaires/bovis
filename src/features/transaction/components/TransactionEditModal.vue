@@ -8,7 +8,7 @@
         <v-btn
           icon="mdi-close"
           variant="text"
-          @click="emit('update:modelValue', false)"
+          @click="handleClose"
         />
       </v-card-title>
 
@@ -93,10 +93,10 @@
         </v-form>
 
         <!-- Mensagens de erro/sucesso -->
-        <v-alert v-if="error" type="error" variant="tonal" class="mt-4">
-          {{ error }}
+        <v-alert v-if="saveError" type="error" variant="tonal" class="mt-4">
+          {{ saveError }}
         </v-alert>
-        <v-alert v-if="success" type="success" variant="tonal" class="mt-4">
+        <v-alert v-if="saveSuccess" type="success" variant="tonal" class="mt-4">
           Transação atualizada com sucesso!
         </v-alert>
       </v-card-text>
@@ -105,8 +105,8 @@
         <v-spacer />
         <v-btn
           variant="text"
-          @click="emit('update:modelValue', false)"
-          :disabled="loading"
+          @click="handleClose"
+          :disabled="saving"
         >
           Cancelar
         </v-btn>
@@ -114,7 +114,7 @@
           color="primary"
           variant="elevated"
           @click="handleSave"
-          :loading="loading"
+          :loading="saving"
           :disabled="!formValid"
         >
           Salvar
@@ -126,6 +126,7 @@
 
 <script setup>
 import { ref, watch } from 'vue';
+import { useTransactionEdit } from '../composables/useTransactionEdit';
 
 const props = defineProps({
   modelValue: {
@@ -135,22 +136,12 @@ const props = defineProps({
   transaction: {
     type: Object,
     default: null
-  },
-  loading: {
-    type: Boolean,
-    default: false
-  },
-  error: {
-    type: String,
-    default: null
-  },
-  success: {
-    type: Boolean,
-    default: false
   }
 });
 
-const emit = defineEmits(['update:modelValue', 'save']);
+const emit = defineEmits(['update:modelValue', 'saved']);
+
+const { saving, saveError, saveSuccess, saveTransaction, resetState } = useTransactionEdit();
 
 const formRef = ref(null);
 const formValid = ref(false);
@@ -180,6 +171,12 @@ watch(() => props.transaction, (newTransaction) => {
   }
 }, { immediate: true });
 
+watch(() => props.modelValue, (isOpen) => {
+  if (isOpen) {
+    resetState();
+  }
+});
+
 async function handleSave() {
   const { valid } = await formRef.value.validate();
   if (!valid) return;
@@ -192,6 +189,20 @@ async function handleSave() {
     descricao: form.value.descricao || null,
   };
 
-  emit('save', { id: form.value.id, payload });
+  const result = await saveTransaction(form.value.id, payload);
+
+  if (result.success) {
+    
+    emit('saved', { payload });
+
+    setTimeout(() => {
+      emit('update:modelValue', false);
+    }, 1500);
+  }
+}
+
+function handleClose() {
+  resetState();
+  emit('update:modelValue', false);
 }
 </script>
