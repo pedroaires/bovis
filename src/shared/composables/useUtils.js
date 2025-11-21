@@ -4,7 +4,15 @@ export function useUtils(){
         const n = Number(String(s).replace(',', '.'))
         return Number.isFinite(n) ? n : null
     }
-    return{
-        parseDecimal
+    function parseInteger(s) {
+        if (s === null || s === undefined || s === '') return null
+        const n = parseInt(String(s).trim(), 10)
+        return Number.isFinite(n) ? n : null
     }
+    
+    return{
+        parseDecimal,
+        parseInteger
+    }
+
 }
