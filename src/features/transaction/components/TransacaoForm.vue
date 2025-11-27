@@ -52,7 +52,6 @@ function updateField(partial) {
   emit('update:modelValue', { ...props.modelValue, ...partial })
 }
 
-// proxies por campo (sem watchers)
 const dataProxy = computed({
   get: () => props.modelValue.data,
   set: v => updateField({ data: v }),

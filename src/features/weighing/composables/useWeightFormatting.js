@@ -1,5 +1,7 @@
+import { useUtils } from "@/shared/composables/useUtils";
+
 export function useWeightFormatting() {
-    
+    const { parseDecimal } = useUtils();   
     const formatDate = (dateString) => {
         if (!dateString) return '—';
         const date = new Date(dateString + 'T00:00:00'); 
@@ -51,12 +53,21 @@ export function useWeightFormatting() {
     const getGainClass = (ganho) => {
         if (ganho === null || ganho === undefined) return '';
         return ganho >= 0 ? 'text-success' : 'text-error';
-    };
+    }
 
     function formatCurrency(value) {
         if (value == null) return '0,00';
         return Number(value).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     }
+    function normalizePeso(item) {
+        item.peso = parseDecimal(item.pesoStr)
+        item.pesoStr = item.peso != null ? String(item.peso).replace('.', ',') : ''
+    }
+    function normalizeValor(item) {
+        item.valor = parseDecimal(item.valorStr)
+        item.valorStr = item.valor != null ? String(item.valor) : ''
+    }
+
     
     return {
         formatDate,
@@ -68,6 +79,8 @@ export function useWeightFormatting() {
         calculateDaysBetween,
         getGMDColor,
         getGainClass,
-        formatCurrency
+        formatCurrency,
+        normalizePeso,
+        normalizeValor
     };
 }

@@ -144,7 +144,7 @@ import { ref, computed } from 'vue'
 import UploadDialog from '@/features/transaction/components/UploadDialog.vue'
 import PreviewTable from '@/features/transaction/components/EditableTable.vue'
 import TransacaoForm from '@/features/transaction/components/TransacaoForm.vue'
-import { usePurchaseUpload } from '../composables/usePurchaseUpload'
+import { usePurchaseUpload } from '../composables/useRegisterPurchase'
 
 const {
   expectedItemColumns,

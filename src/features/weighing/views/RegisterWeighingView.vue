@@ -138,11 +138,12 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import api from '@/services/api.js'
+import { ref, onMounted, watch } from 'vue'
 import ClientDataTable from '@/shared/components/ClientDataTable.vue'
 import { useCattleStatus } from '@/shared/composables/useCattleStatus'
-import { useWeightFormatting } from '../composables/useWeightFormatting'
+import { useWeightFormatting } from '../composables/useWeightFormatting';
+import { useActiveCattle } from '@/features/cattle/composables/useActiveCattle';
+import { useRegisterWeighing } from '../composables/useRegisterWeighing';
 
 const headers = [
   { title: 'ID', key: 'id' },
@@ -153,18 +154,30 @@ const headers = [
   { title: 'Último Peso', key: 'peso' },
 ];
 
-const { formatDate } = useWeightFormatting();
+const { formatDate, normalizePeso } = useWeightFormatting();
 const { getColor } = useCattleStatus();
-const step = ref(1)
-const loading = ref(false)
-const cattle = ref([])
-const selected = ref([]) // IDs dos bois selecionados
 
-const submitting = ref(false)
+const { 
+  fetchActiveCattle, 
+  loading, 
+  cattle,
+  error: fetchCattleError
+} = useActiveCattle();
+const{
+  weighingDate,
+  weighingItems,
+  submitting,
+  error: submitError,
+  canSubmit,
+  createFromSelection,
+  submit
+} = useRegisterWeighing();
+
+const step = ref(1)
+const selected = ref([])
+
 const snackbar = ref({ show: false, text: '' })
 const errorMsg = ref('')
-const weighingItems = ref([])
-const weighingDate = ref(new Date().toISOString().slice(0, 10))
 const today = new Date().toISOString().slice(0, 10)
 
 const itemHeaders = [
@@ -176,42 +189,23 @@ const itemHeaders = [
   { title: 'Medicações Aplicadas', key: 'medicacoes', sortable: false },
 ]
 
-onMounted(async () => {
-  await fetchCattle()
+watch(fetchCattleError, (newError) => {
+  if (newError) {
+    errorMsg.value = newError
+  }
+})
+watch(submitError, (newError) => {
+  if (newError) {
+    errorMsg.value = newError
+  }
 })
 
-async function fetchCattle() {
-  loading.value = true
-  try {
-    const resp = await api.getActiveCattleWithWeight()
-    cattle.value = resp.data ?? []
-  } catch (e) {
-    console.error(e)
-    errorMsg.value = 'Falha ao buscar os dados do gado.'
-  } finally {
-    loading.value = false
-  }
-}
+onMounted(async () => {
+  await fetchActiveCattle()
+})
 
 function toStep2() {
-  const sel = Array.isArray(selected.value) ? selected.value.filter(Boolean) : []
-  const byId = new Map(cattle.value.map(x => [x.id, x]))
-
-  weighingItems.value = sel.map(s => {
-    const c = (typeof s === 'object' && s !== null) ? s : byId.get(s)
-    if (!c) return null
-    return {
-      boiId: c.id,
-      numero: c.numero,
-      raca: c.raca,
-      peso: null,
-      pesoStr: '',
-      descricao: '',
-      medicacoes: [],
-    }
-  }).filter(Boolean)
-
-  if (!weighingItems.value.length) {
+  if (!createFromSelection(selected, cattle)) {
     errorMsg.value = 'Seleção inválida. Tente selecionar novamente.'
     step.value = 1
     return
@@ -220,59 +214,15 @@ function toStep2() {
   step.value = 2
 }
 
-function parseDecimal(s) {
-  if (s === null || s === undefined || String(s).trim() === '') return null
-  const n = Number(String(s).replace(',', '.'))
-  return Number.isFinite(n) && n > 0 ? n : null
-}
-
-function normalizePeso(item) {
-  item.peso = parseDecimal(item.pesoStr)
-  item.pesoStr = item.peso != null ? String(item.peso).replace('.', ',') : ''
-}
-
-const canSubmit = computed(() => {
-  if (!weighingDate.value || weighingItems.value.length === 0) {
-    return false
-  }
-  // Garante que todos os bois selecionados tenham um peso válido
-  return weighingItems.value.every(item => item.peso !== null && item.peso > 0)
-})
-
 async function submitWeighing() {
   if (!canSubmit.value) return
-
-  try {
-    submitting.value = true
-    errorMsg.value = ''
-
-    const pesagens = weighingItems.value.map(it => ({
-      boiId: it.boiId,
-      peso: it.peso,
-      descricao: it.descricao || null,
-      data: weighingDate.value,
-      medicacoes: it.medicacoes,
-    }))
-    console.log(pesagens);
-    await api.createWeighingBatch({pesagens: pesagens})
-    
-
+  submit(() => {
     snackbar.value = { show: true, text: 'Pesagem(ns) cadastrada(s) com sucesso!' }
-    resetForm()
-    await fetchCattle()
-
-  } catch (e) {
-    console.error('createWeighing error:', e?.response?.data || e)
-    errorMsg.value = e?.response?.data?.message || 'Falha ao cadastrar a pesagem.'
-  } finally {
-    submitting.value = false
-  }
+    step.value = 1
+    selected.value = []
+    fetchActiveCattle()
+  })
+  
 }
 
-function resetForm() {
-  step.value = 1
-  selected.value = []
-  weighingItems.value = []
-  weighingDate.value = new Date().toISOString().slice(0, 10)
-}
 </script>

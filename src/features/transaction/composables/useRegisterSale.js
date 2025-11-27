@@ -1,10 +1,11 @@
 import { useUtils } from "@/shared/composables/useUtils";
 import { ref, computed } from 'vue';
 import api from "@/services/api";
+import { useWeightFormatting } from "@/features/weighing/composables/useWeightFormatting";
 
 export function useRegisterSale(){
     const { parseDecimal } = useUtils();
-    
+    const { normalizePeso, normalizeValor } = useWeightFormatting();
     const saleItems = ref([]);
     const error = ref(null);
     const submitting = ref(false);
@@ -71,16 +72,6 @@ export function useRegisterSale(){
     function clear() {
         form.value = { data: '', descricao: '', modeloTransacao: 'PESO', contraParte: '', valorTotal: '' }
         saleItems.value = []
-    }
-
-    function normalizeValor(item) {
-        item.valor = parseDecimal(item.valorStr)
-        item.valorStr = item.valor != null ? String(item.valor) : ''
-    }
-
-    function normalizePeso(item) {
-        item.peso = parseDecimal(item.pesoStr)
-        item.pesoStr = item.peso != null ? String(item.peso) : ''
     }
 
     async function submit(onSuccess){
