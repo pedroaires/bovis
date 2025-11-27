@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const apiClient = axios.create({
-  baseURL: 'http://192.168.1.102:8080/api',
+  baseURL: 'http://192.168.1.60:8080/api',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -55,6 +55,9 @@ export default {
   },
   async updateIndividualWeighing(pesagemId, payload){
     return apiClient.put(`pesagem/editaPesagem/${pesagemId}`, payload)
+  },
+  async deleteIndividualWeighing(pesagemId){
+    return apiClient.delete(`pesagem/${pesagemId}`)
   },
   async deleteGroupedWeighing(data){
     return apiClient.delete(`pesagem/agrupadas/${data}`)

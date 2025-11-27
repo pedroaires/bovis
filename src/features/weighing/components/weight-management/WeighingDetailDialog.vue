@@ -146,7 +146,7 @@
                 <v-btn color="grey-darken-1" variant="text" @click="showDeleteDialog = false">
                     Cancelar
                 </v-btn>
-                <v-btn color="error" variant="flat" @click="deleteIndividual">
+                <v-btn color="error" variant="flat" @click="handleDeleteIndividual">
                     Deletar
                 </v-btn>
             </v-card-actions>
@@ -157,12 +157,14 @@
 import { watch, ref, toRefs } from 'vue';
 import WeighingEditDialog from '@/features/weighing/components/weight-management/WeighingEditDialog.vue'; 
 import { useWeightFormatting } from '../../composables/useWeightFormatting';
-import api from '@/services/api'; 
+import { useWeighingDetails } from '../../composables/useWeighingDetails';
+
 
 const {
     formatDate,
     formatPeso
 } = useWeightFormatting();
+
 const props = defineProps({
     modelValue: {
         type: Boolean,
@@ -173,43 +175,38 @@ const props = defineProps({
         default: null,
     },
 })
+
+
 const emit = defineEmits(['update:modelValue', 'close', 'pesagem-edited', 'pesagem-deleted'])
-const weighings = ref([])
-const loading = ref(false)
-const error = ref(null)
+
+const { 
+    weighings,
+    loading,
+    error,
+    fetchIndividualWeighings,
+    deleteIndividual
+} = useWeighingDetails();
+
 const showEditDialog = ref(false)
 const showDeleteDialog = ref(false)
 const selectedWeighing = ref(null)
 const { modelValue, dataPesagem } = toRefs(props)
+
 watch(dataPesagem, () => {
     if (modelValue) {
-        fetchIndividualWeighings();
+        fetchIndividualWeighings(dataPesagem.value);
     }
 })
 
 watch(modelValue, (newVal) => {
     if (newVal && dataPesagem.value) {
-        fetchIndividualWeighings();
+        fetchIndividualWeighings(dataPesagem.value);
     } else if (!newVal) {
         weighings.value = [];
         error.value = null;
     }
 })
 
-async function fetchIndividualWeighings() {
-    if (!dataPesagem.value) return;
-    loading.value = true;
-    error.value = null;
-    try {
-        const response = await api.fetchIndividualWeighingsByDate(dataPesagem.value); 
-        weighings.value = response.data;
-    } catch (err) {
-        console.error('Erro ao buscar pesagens individuais:', err);
-        error.value = err.message || 'Erro desconhecido.';
-    } finally {
-        loading.value = false;
-    }
-}
 
 function openEditDialog(pesagem) {
     const pesagemComData = {
@@ -225,28 +222,19 @@ function confirmDeleteIndividual(pesagem) {
     showDeleteDialog.value = true;
 }
 
-async function deleteIndividual() {
+async function handleDeleteIndividual() {
     if (!selectedWeighing.value) return;
-
-    try {
-        loading.value = true;
-        await api.deleteIndividualWeighing(selectedWeighing.value.id); 
-        
-        showDeleteDialog.value = false;
-        await fetchIndividualWeighings();
-        emit('pesagem-deleted'); 
-        // TODO: Adicionar lógica de notificação de sucesso aqui
-    } catch (error) {
-        console.error('Erro ao deletar pesagem individual:', error);
-        // TODO: Adicionar lógica de notificação de erro aqui
-    } finally {
-        loading.value = false;
+    const success = deleteIndividual(selectedWeighing.value.id);
+    if(success){
+        await fetchIndividualWeighings(props.dataPesagem);
+        emit('pesagem-deleted');
     }
+    showDeleteDialog.value = false
 }
 
 function onPesagemUpdated() {
     showEditDialog.value = false;
-    fetchIndividualWeighings(); 
+    fetchIndividualWeighings(dataPesagem.value); 
     emit('pesagem-edited'); 
     // TODO: Adicionar lógica de notificação de sucesso aqui
 }
