@@ -14,6 +14,15 @@
 
         <!-- Tabela com Seleção Múltipla -->
         <v-card variant="outlined">
+            <v-alert
+                v-if="error"
+                type="error"
+                class="mb-4"
+                dismissible
+                @click:close="error = ''"
+            >
+                {{ error }}
+            </v-alert>
             <v-card-text>
                 <!-- Filtros -->
                 <v-expansion-panels class="mb-4">
@@ -145,7 +154,7 @@
                             color="error"
                             size="small"
                             title="Deletar Grupo"
-                            @click="confirmDeleteGroup(item)"
+                            @click="deleteGroup(item)"
                         />
                     </template>
                 </v-data-table>
@@ -196,7 +205,7 @@
                     <v-btn color="grey-darken-1" variant="text" @click="showDeleteDialog = false">
                         Cancelar
                     </v-btn>
-                    <v-btn color="error" variant="flat" @click="deleteGroup">
+                    <v-btn color="error" variant="flat" @click="confirmDeleteGroup">
                         Deletar
                     </v-btn>
                 </v-card-actions>
@@ -205,18 +214,27 @@
     </div>
 </template>
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import WeighingDetailDialog from '@/features/weighing/components/weight-management/WeighingDetailDialog.vue';
 import WeighingGroupEditDialog from '@/features/weighing/components/weight-management/WeighingGroupEditDialog.vue';
 import WeightEvolutionDialog from '@/features/weighing/components/weight-comparison/WeightEvolutionDialog.vue';
 import WeightComparisonBar from '@/features/weighing/components/weight-comparison/WeightComparisonBar.vue';
 import { useWeightFormatting } from '@/features/weighing/composables/useWeightFormatting';
-import api from '@/services/api'
+import { useWeighingGroup } from '../composables/useWeighingGroup';
 
 const {
     formatDate,
     formatPeso
 } = useWeightFormatting();
+
+const {
+    groupedWeighings,
+    loading,
+    error: fetchWeighingsError,
+    fetchGroupedWeighings,
+    deleteGrouppedWeighing,
+} = useWeighingGroup();
+
 
 const headers = ref([
     { title: 'Data da Pesagem', key: 'data', sortable: true },
@@ -225,11 +243,9 @@ const headers = ref([
     { title: 'Peso Total (kg)', key: 'pesoTotal', sortable: true },
     { title: 'Ações', key: 'actions', sortable: false, align: 'center' },
 ])
-const groupedWeighings = ref([]);
-const loading = ref(false);
-const totalElements = ref(0);
 
 const selectedItems = ref([])
+const error = ref(null)
 
 // Filtros
 const filters = ref({
@@ -245,18 +261,13 @@ const showDeleteDialog = ref(false);
 const showMatrixDialog = ref(false);
 const selectedGroup = ref(null);
 
-async function fetchGroupedWeighings(){
-    try {
-        loading.value = true;
-        const response = await api.fetchGroupedWeighings();
-        groupedWeighings.value = response.data;
-        totalElements.value = response.data.totalElements;
-    } catch (error) {
-        console.error('Erro ao buscar pesagens agrupadas:', error)
-    } finally {
-        loading.value = false;
+
+watch(fetchWeighingsError, (newError) => {
+    if(newError){
+        error.value = newError;
     }
-}
+})
+
 function applyFilters() {
     fetchGroupedWeighings();
 }
@@ -276,26 +287,18 @@ function openEditGroupDialog(group) {
     showEditGroupDialog.value = true
 }
 
-function confirmDeleteGroup(group) {
+function deleteGroup(group) {
     selectedGroup.value = group
     showDeleteDialog.value = true
 }
 
-async function deleteGroup() {
+async function confirmDeleteGroup() {
     if (!selectedGroup.value) return;
+    await deleteGrouppedWeighing(
+        selectedGroup.value.data
+    );
+    showDeleteDialog.value = false;
 
-    try {
-        loading.value = true;
-        const dataPesagem = selectedGroup.value.data;
-        await api.deleteGroupedWeighing(dataPesagem); 
-        
-        showDeleteDialog.value = false;
-        fetchGroupedWeighings(); 
-    } catch (error) {
-        console.error('Erro ao deletar grupo de pesagens:', error);
-    } finally {
-        loading.value = false;
-    }
 }
 
 function onGroupUpdated() {
