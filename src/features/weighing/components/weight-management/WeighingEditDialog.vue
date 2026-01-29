@@ -77,90 +77,85 @@
     </v-dialog>
 </template>
 
-<script>
+<script setup>
 import api from '@/services/api'; 
+import { ref, watch } from 'vue';
 
-export default {
-    name: 'WeighingEditDialog',
-    props: {
-        modelValue: {
-            type: Boolean,
-            default: false,
-        },
-        pesagemData: {
-            type: Object,
-            default: () => ({}),
-        },
+const props = defineProps({
+    modelValue: {
+        type: Boolean,
+        default: false,
     },
-    emits: ['update:modelValue', 'close', 'pesagem-updated'],
-    data() {
-        return {
-            pesagemForm: {
-                id: null,
-                numeroBoi: '',
-                dataPesagem: null,
-                peso: null,
-            },
-            formValid: false,
-            loading: false,
-            error: null,
-            success: false,
-        }
+    pesagemData: {
+        type: Object,
+        default: () => ({}),
     },
-    watch: {
-        pesagemData: {
-            handler(newVal) {
-                if (newVal && newVal.id) {
-                    console.log(newVal)
-                    this.pesagemForm.id = newVal.id;
-                    this.pesagemForm.numeroBoi = newVal.numeroBoi;
-                    this.pesagemForm.dataPesagem = newVal.dataPesagem;
-                    this.pesagemForm.peso = newVal.peso;
-                    this.error = null;
-                    this.success = false;
-                }
-            },
-            immediate: true,
-            deep: true,
-        },
-        modelValue(val) {
-            if (!val) {
-                this.error = null;
-                this.success = false;
-            }
-        }
-    },
-    methods: {
-        async savePesagem() {
-            if (!this.$refs.editFormRef.validate()) return;
+})
+    
+const emit = defineEmits(['update:modelValue', 'close', 'pesagem-updated'])
+const pesagemForm = ref({
+    id: null,
+    numeroBoi: '',
+    dataPesagem: null,
+    peso: null,
+})
+const editFormRef = ref(null)
+const formValid = ref(false)
+const loading = ref(false)
+const error = ref(null)
+const success = ref(false)
 
-            this.loading = true;
-            this.error = null;
-            this.success = false;
-
-            try {
-                const payload = {
-                    boiId: this.pesagemData.boiId,
-                    data: this.pesagemForm.dataPesagem,
-                    peso: this.pesagemForm.peso,
-                }
-                await api.updateIndividualWeighing(this.pesagemForm.id, payload); 
-                
-                this.success = true;
-                this.$emit('pesagem-updated');
-                
-                setTimeout(this.closeDialog, 1000); 
-            } catch (err) {
-                console.error('Erro ao salvar pesagem individual:', err);
-                this.error = err.response?.data?.message || 'Erro ao atualizar a pesagem. Tente novamente.';
-            } finally {
-                this.loading = false;
-            }
-        },
-        closeDialog() {
-            this.$emit('update:modelValue', false);
-            this.$emit('close');
-        }
+watch(() => props.pesagemData, (newVal) => {
+    console.log(newVal)
+    if(newVal && newVal.id){
+        pesagemForm.value.id = newVal.id;
+        pesagemForm.value.numeroBoi = newVal.numeroBoi;
+        pesagemForm.value.dataPesagem = newVal.dataPesagem;
+        pesagemForm.value.peso = newVal.peso;
+        error.value = null;
+        success.value = false;
     }
+    },
+    {
+        immediate: true,
+        deep: true
+    }
+)
+watch(() => props.modelValue, (newVal) => {
+    if (!newVal) {
+        error.value = null;
+        success.value = false;
+    }
+})
+async function savePesagem() {
+    const { valid } = await editFormRef.value.validate()
+    if (!valid) return;
+
+    loading.value = true;
+    error.value = null;
+    success.value = false;
+
+    try {
+        const payload = {
+            boiId: props.pesagemData.boiId,
+            data: pesagemForm.value.dataPesagem,
+            peso: pesagemForm.value.peso,
+        }
+        await api.updateIndividualWeighing(pesagemForm.value.id, payload); 
+        
+        success.value = true;
+        emit('pesagem-updated');
+        
+        setTimeout(closeDialog, 1000); 
+    } catch (err) {
+        console.error('Erro ao salvar pesagem individual:', err);
+        error.value = err.response?.data?.message || 'Erro ao atualizar a pesagem. Tente novamente.';
+    } finally {
+        loading.value = false;
+    }
+}
+function closeDialog() {
+    emit('update:modelValue', false);
+    emit('close');
 }
 </script>
