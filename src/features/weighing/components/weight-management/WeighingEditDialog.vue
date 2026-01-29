@@ -78,8 +78,17 @@
 </template>
 
 <script setup>
-import api from '@/services/api'; 
 import { ref, watch } from 'vue';
+import { useEditWeighing } from '../../composables/useEditWeighing';
+const {
+    pesagemForm,
+    loading,
+    error,
+    success,
+    populateForm,
+    resetMessages,
+    updateWeighing
+} = useEditWeighing();
 
 const props = defineProps({
     modelValue: {
@@ -93,28 +102,12 @@ const props = defineProps({
 })
     
 const emit = defineEmits(['update:modelValue', 'close', 'pesagem-updated'])
-const pesagemForm = ref({
-    id: null,
-    numeroBoi: '',
-    dataPesagem: null,
-    peso: null,
-})
+
 const editFormRef = ref(null)
 const formValid = ref(false)
-const loading = ref(false)
-const error = ref(null)
-const success = ref(false)
 
 watch(() => props.pesagemData, (newVal) => {
-    console.log(newVal)
-    if(newVal && newVal.id){
-        pesagemForm.value.id = newVal.id;
-        pesagemForm.value.numeroBoi = newVal.numeroBoi;
-        pesagemForm.value.dataPesagem = newVal.dataPesagem;
-        pesagemForm.value.peso = newVal.peso;
-        error.value = null;
-        success.value = false;
-    }
+    populateForm(newVal);
     },
     {
         immediate: true,
@@ -123,35 +116,16 @@ watch(() => props.pesagemData, (newVal) => {
 )
 watch(() => props.modelValue, (newVal) => {
     if (!newVal) {
-        error.value = null;
-        success.value = false;
+        resetMessages();
     }
 })
 async function savePesagem() {
     const { valid } = await editFormRef.value.validate()
     if (!valid) return;
-
-    loading.value = true;
-    error.value = null;
-    success.value = false;
-
-    try {
-        const payload = {
-            boiId: props.pesagemData.boiId,
-            data: pesagemForm.value.dataPesagem,
-            peso: pesagemForm.value.peso,
-        }
-        await api.updateIndividualWeighing(pesagemForm.value.id, payload); 
-        
-        success.value = true;
+    const updated = await updateWeighing(props.pesagemData.boiId);
+    if (updated){
         emit('pesagem-updated');
-        
         setTimeout(closeDialog, 1000); 
-    } catch (err) {
-        console.error('Erro ao salvar pesagem individual:', err);
-        error.value = err.response?.data?.message || 'Erro ao atualizar a pesagem. Tente novamente.';
-    } finally {
-        loading.value = false;
     }
 }
 function closeDialog() {
