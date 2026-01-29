@@ -110,11 +110,10 @@ public class PesagemAPIController {
         pesagemService.deletaPesagensEmLotePorData(data);
     }
 
-    @DeleteMapping(value = "/deletaPesagem")
-    @ResponseStatus(HttpStatus.OK)
-    public PesagemResponseDTO deletaPesagem(Long id){
-        PesagemResponseDTO pesagemResponseDTO = new PesagemResponseDTO(pesagemService.deletaPesagem(id));
-        return pesagemResponseDTO;
+    @DeleteMapping(value = "/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deletaPesagem(@PathVariable Long id){
+        pesagemService.deletaPesagem(id);
     }
 
     @PostMapping("/matriz")
