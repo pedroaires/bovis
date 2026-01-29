@@ -1,7 +1,6 @@
-import { useUtils } from "@/shared/composables/useUtils";
+import { parseDecimal } from "@/shared/utils/parsers/numberParser";
 
 export function useWeightFormatting() {
-    const { parseDecimal } = useUtils();   
     const formatDate = (dateString) => {
         if (!dateString) return '—';
         const date = new Date(dateString + 'T00:00:00'); 

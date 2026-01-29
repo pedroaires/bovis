@@ -1,6 +1,6 @@
 import { computed, ref } from "vue"
 import * as XLSX from 'xlsx';
-import { useUtils } from "@/shared/composables/useUtils";
+import { parseDecimal, parseInteger } from "@/shared/utils/parsers/numberParser";
 import api from "@/services/api";
 
 async function parseFileXlsx(file) {
@@ -41,7 +41,6 @@ function validateItemData(item, utils) {
 }
 
 export function usePurchaseUpload() {
-    const { parseDecimal, parseInteger } = useUtils();
     
     // Estado do arquivo
     const previewRows = ref([])
