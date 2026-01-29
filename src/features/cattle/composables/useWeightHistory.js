@@ -1,9 +1,8 @@
 import api from "@/services/api";
 import { computed, ref, watch } from 'vue';
-import { useWeightFormatting } from "@/features/weighing/composables/useWeightFormatting";
+import { calculateDaysBetween } from "@/shared/utils/calculators/dateCalculator";
 
 export function useWeightHistory(cattleIdRef){
-    const { calculateDaysBetween } = useWeightFormatting();    
     const loading = ref(false);
     const rawWeightHistory = ref([]);
     const fetchError = ref(null);

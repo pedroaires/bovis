@@ -1,14 +1,10 @@
+import { calculateDaysBetween } from "@/shared/utils/calculators/dateCalculator";
+
 export function useWeightComparison(){
     const getTotalBois = (groupedWeighings, selectedItems) => {
         groupedWeighings
             .filter(g => selectedItems.includes(g.data))
             .reduce((sum, g) => sum + (g.totalBois || 0), 0);
-    };
-    const calculateDaysBetween = (date1, date2) => {
-        const d1 = new Date(date1 + 'T00:00:00');
-        const d2 = new Date(date2 + 'T00:00:00');
-        const diffTime = Math.abs(d2 - d1);
-        return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     };
 
     const getTotalDays = (sortedSelectedDates) => {

@@ -219,13 +219,10 @@ import WeighingDetailDialog from '@/features/weighing/components/weight-manageme
 import WeighingGroupEditDialog from '@/features/weighing/components/weight-management/WeighingGroupEditDialog.vue';
 import WeightEvolutionDialog from '@/features/weighing/components/weight-comparison/WeightEvolutionDialog.vue';
 import WeightComparisonBar from '@/features/weighing/components/weight-comparison/WeightComparisonBar.vue';
-import { useWeightFormatting } from '@/features/weighing/composables/useWeightFormatting';
-import { useWeighingGroup } from '../composables/useWeighingGroup';
+import { formatDate } from '@/shared/utils/formatters/dateFormatter';
+import { formatPeso } from '@/shared/utils/formatters/weightFormatter';
 
-const {
-    formatDate,
-    formatPeso
-} = useWeightFormatting();
+import { useWeighingGroup } from '../composables/useWeighingGroup';
 
 const {
     groupedWeighings,

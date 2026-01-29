@@ -94,7 +94,9 @@
 </template>
 <script setup>
 import { computed } from 'vue';
-import { useWeightFormatting } from '@/features/weighing/composables/useWeightFormatting';
+import { getGMDColor } from "@/shared/utils/helpers/styleHelpers"
+import{ formatDate } from "@/shared/utils/formatters/dateFormatter" 
+import { formatPeso, formatGMD } from "@/shared/utils/formatters/weightFormatter"
 import { useCattleStatus } from '@/shared/composables/useCattleStatus';
 import { useWeightHistory } from '../composables/useWeightHistory';
 import { useChartConfig } from '../composables/useChartConfig';
@@ -110,12 +112,6 @@ const props = defineProps({
     }
 });
 const cattleId = computed(() => props.cattle?.id);
-const {
-    formatGMD,
-    getGMDColor,
-    formatDate,
-    formatPeso,
-} = useWeightFormatting();
 
 const {
     getColor: getStatusColor

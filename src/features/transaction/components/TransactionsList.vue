@@ -59,10 +59,9 @@
 import { ref, onMounted } from 'vue';
 import TransactionDetailModal from './TransactionDetailModal.vue';
 import TransactionEditModal from './TransactionEditModal.vue';
-import { useWeightFormatting } from '@/features/weighing/composables/useWeightFormatting';
+import{ formatDate } from "@/shared/utils/formatters/dateFormatter" 
+import { formatCurrency } from '@/shared/utils/formatters/currencyFormatter';
 import { useTransactionList } from '../composables/useTransationList';
-
-const { formatDate, formatCurrency } = useWeightFormatting();
 const { 
   loading,
   error: fetchTransactionsError,

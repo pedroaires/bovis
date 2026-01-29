@@ -169,8 +169,11 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'; 
-import { useWeightFormatting } from '@/features/weighing/composables/useWeightFormatting';
+import { ref, computed } from 'vue';
+import { getGMDColor, getGainClass } from "@/shared/utils/helpers/styleHelpers"
+import { formatPeso, formatGanhoTotal, formatGMD } from "@/shared/utils/formatters/weightFormatter"
+import { calculateDaysBetween } from '@/shared/utils/calculators/dateCalculator';
+import { formatDateShort } from "@/shared/utils/formatters/dateFormatter";
 
 
 const props = defineProps({
@@ -183,16 +186,6 @@ const props = defineProps({
         default: () => [],
     },
 });
-
-const { 
-    formatDateShort,
-    formatPeso,
-    formatGMD,
-    formatGanhoTotal,
-    calculateDaysBetween,
-    getGMDColor,
-    getGainClass,
-} = useWeightFormatting();
 
 const filters = ref({
     racas: [],

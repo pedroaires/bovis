@@ -1,10 +1,10 @@
 import { parseDecimal } from "@/shared/utils/parsers/numberParser";
 import { ref, computed } from 'vue';
 import api from "@/services/api";
-import { useWeightFormatting } from "@/features/weighing/composables/useWeightFormatting";
+import { normalizeValor } from "@/shared/utils/formatters/currencyFormatter";
+import { normalizePeso } from "@/shared/utils/formatters/weightFormatter";
 
 export function useRegisterSale(){
-    const { normalizePeso, normalizeValor } = useWeightFormatting();
     const saleItems = ref([]);
     const error = ref(null);
     const submitting = ref(false);

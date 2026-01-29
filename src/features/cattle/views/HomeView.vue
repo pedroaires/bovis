@@ -68,11 +68,10 @@
 import { onMounted } from 'vue';
 import { useActiveCattle } from '../composables/useActiveCattle'
 import { useCattleStatus } from '@/shared/composables/useCattleStatus';
-import { useWeightFormatting } from '@/features/weighing/composables/useWeightFormatting';
+import { formatDate } from '@/shared/utils/formatters/dateFormatter';
 import ClientDataTable from '@/shared/components/ClientDataTable.vue';
 const { getColor } = useCattleStatus();
 const { cattle, loading, error, fetchActiveCattle } = useActiveCattle();
-const { formatDate } = useWeightFormatting();
 const headers = [
   { title: 'ID', key: 'id' },
   { title: 'Número', key: 'numero' },

@@ -109,7 +109,9 @@
 <script setup>
 import api from '@/services/api';
 import { ref, computed } from 'vue';
-import { useWeightFormatting } from '@/features/weighing/composables/useWeightFormatting';
+import { getGMDColor } from "@/shared/utils/helpers/styleHelpers"
+import { formatPesoKg, formatGanhoTotal, formatGMD } from "@/shared/utils/formatters/weightFormatter"
+
 const emit = defineEmits(['error']);
 const props = defineProps({
     matrixData: {
@@ -126,12 +128,6 @@ const props = defineProps({
     },
 });
 
-const {
-    formatGMD,
-    formatGanhoTotal,
-    getGMDColor,
-    formatPesoKg
-} = useWeightFormatting();
 const tableSortBy = ref('gmdMedio');
 const tableFilterRacas = ref([]);
 const tableSortOptions = ref([

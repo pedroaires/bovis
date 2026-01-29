@@ -141,7 +141,8 @@
 import { ref, onMounted, watch } from 'vue'
 import ClientDataTable from '@/shared/components/ClientDataTable.vue'
 import { useCattleStatus } from '@/shared/composables/useCattleStatus'
-import { useWeightFormatting } from '../composables/useWeightFormatting';
+import { formatDate } from '@/shared/utils/formatters/dateFormatter';
+import { normalizePeso } from '@/shared/utils/formatters/weightFormatter';
 import { useActiveCattle } from '@/features/cattle/composables/useActiveCattle';
 import { useRegisterWeighing } from '../composables/useRegisterWeighing';
 
@@ -154,7 +155,6 @@ const headers = [
   { title: 'Último Peso', key: 'peso' },
 ];
 
-const { formatDate, normalizePeso } = useWeightFormatting();
 const { getColor } = useCattleStatus();
 
 const { 

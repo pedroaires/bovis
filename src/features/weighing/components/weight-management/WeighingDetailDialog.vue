@@ -156,14 +156,10 @@
 <script setup>
 import { watch, ref, toRefs } from 'vue';
 import WeighingEditDialog from '@/features/weighing/components/weight-management/WeighingEditDialog.vue'; 
-import { useWeightFormatting } from '../../composables/useWeightFormatting';
+import { formatDate } from '@/shared/utils/formatters/dateFormatter';
+import { formatPeso } from '@/shared/utils/formatters/weightFormatter';
 import { useWeighingDetails } from '../../composables/useWeighingDetails';
 
-
-const {
-    formatDate,
-    formatPeso
-} = useWeightFormatting();
 
 const props = defineProps({
     modelValue: {

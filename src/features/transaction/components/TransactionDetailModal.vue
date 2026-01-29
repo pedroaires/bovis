@@ -145,12 +145,13 @@
 </template>
 
 <script setup>
-import { useWeightFormatting } from '@/features/weighing/composables/useWeightFormatting';
+import { formatDate } from "@/shared/utils/formatters/dateFormatter"
+import { formatCurrency } from '@/shared/utils/formatters/currencyFormatter';
 import { useCattleStatus } from '@/shared/composables/useCattleStatus';
 import { useTransactionDetails } from '../composables/useTransactionDetails';
-const { formatDate } = useWeightFormatting();
 const { getColor } = useCattleStatus();
 import { computed } from 'vue';
+
 const props = defineProps({
   modelValue: {
     type: Boolean,
@@ -172,10 +173,6 @@ const {
 
   const emit = defineEmits(['update:modelValue', 'edit']);
 
-function formatCurrency(value) {
-  if (value == null) return '0,00';
-  return Number(value).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-}
 
 function calculateItemsTotal() {
   if (!transactionDetailed.value?.itens) return formatCurrency(0);

@@ -110,7 +110,8 @@
 <script setup>
 import { computed } from 'vue';
 import { useWeightComparison } from '@/features/weighing/composables/useWeightComparison';
-import { useWeightFormatting } from '@/features/weighing/composables/useWeightFormatting';
+import { formatDate } from '@/shared/utils/formatters/dateFormatter';
+
 const props = defineProps({
     selectedDates: {
         type: Object,
@@ -122,9 +123,6 @@ const props = defineProps({
     }
 });
 
-const {
-    formatDate,
-} = useWeightFormatting();
 
 const {
     getTotalBois,

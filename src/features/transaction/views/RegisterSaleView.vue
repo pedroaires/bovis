@@ -140,12 +140,11 @@ import { ref, computed, onMounted } from 'vue'
 import TransacaoForm from '@/features/transaction/components/TransacaoForm.vue'
 import ClientDataTable from '@/shared/components/ClientDataTable.vue'
 import { useCattleStatus } from '@/shared/composables/useCattleStatus'
-import { useWeightFormatting } from '@/features/weighing/composables/useWeightFormatting'
+import { formatDate } from '@/shared/utils/formatters/dateFormatter'
 import { useActiveCattle } from '@/features/cattle/composables/useActiveCattle';
 import { useRegisterSale } from '../composables/useRegisterSale'
 
 const { getColor } = useCattleStatus();
-const { formatDate } = useWeightFormatting();
 
 
 const snackbar = ref({ show: false, text: '' })

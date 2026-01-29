@@ -149,17 +149,14 @@
 </template>
 <script setup>
 import CattleDetailModal from '@/features/cattle/components/CattleDetailModal.vue';
-import { useWeightFormatting } from '@/features/weighing/composables/useWeightFormatting';
+import { getGMDColor } from "@/shared/utils/helpers/styleHelpers"
+import { formatPeso, formatGMD } from "@/shared/utils/formatters/weightFormatter"
+
 import { useCattlePerformance } from '../composables/useCattlePerformance';
 import { useCattleFilters } from '../composables/useCattleFilters';
 import { ref, onMounted } from 'vue';
 import ServerDataTable from '@/shared/components/ServerDataTable.vue';
 
-const {
-    formatGMD,
-    formatPeso,
-    getGMDColor,
-} = useWeightFormatting();
 
 const {
     cattleSummary,

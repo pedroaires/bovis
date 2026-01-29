@@ -146,7 +146,7 @@
 
 <script setup>
 import { ref, computed, watch, nextTick } from 'vue';
-import { useWeightFormatting } from '@/features/weighing/composables/useWeightFormatting';
+import { formatDateShort } from '@/shared/utils/formatters/dateFormatter';
 import { useTheme } from 'vuetify';
 
 const props = defineProps({
@@ -155,10 +155,6 @@ const props = defineProps({
         required: true,
     },
 })
-
-const { 
-    formatDateShort,
-} = useWeightFormatting();
 
 const selectedBoisForChart = ref([]);
 const chartType = ref('line');
