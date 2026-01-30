@@ -66,10 +66,15 @@
 </template>
 
 <script setup>
-import api from '@/services/api'; 
 import { watch, ref } from 'vue';
 import { formatDate } from '@/shared/utils/formatters/dateFormatter';
-
+import { useGroupEditWeighing } from '../../composables/useGroupEditWeighing';
+const {
+    loading,
+    error,
+    success,
+    updateGroupWeighing
+} = useGroupEditWeighing();
 const props = defineProps({
     modelValue: {
         type: Boolean,
@@ -83,10 +88,6 @@ const props = defineProps({
 
 const novaData = ref(null)
 const formValid = ref(false)
-const loading = ref(false)
-const error = ref(null)
-const success = ref(false)
-
 const editFormRef = ref(null)
 
 watch(() => props.groupData, (newVal) => {
@@ -110,25 +111,12 @@ const emit = defineEmits(['update:modelValue', 'close', 'group-updated'])
 async function saveGroupDate() {
     const { valid } = await editFormRef.value.validate() 
     if (!valid) return;
-
-    loading.value = true;
-    error.value = null;
-    success.value = false;
     
-    const oldDate = props.groupData.data;
-
-    try {
-        await api.updateGroupedWeighingDate(oldDate, novaData.value); 
-        
-        success.value = true;
+    const updated = await updateGroupWeighing(props.groupData.data, novaData.value)
+    if (updated){
         emit('group-updated');
         // Fechar após um pequeno delay para mostrar a mensagem de sucesso
         setTimeout(closeDialog, 1000); 
-    } catch (err) {
-        console.error('Erro ao salvar nova data do grupo:', err);
-        error.value = err.response?.data?.message || 'Erro ao atualizar a data do grupo. Tente novamente.';
-    } finally {
-        loading.value = false;
     }
 }
 function closeDialog() {
