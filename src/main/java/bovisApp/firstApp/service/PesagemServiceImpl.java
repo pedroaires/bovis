@@ -148,7 +148,7 @@ public class PesagemServiceImpl implements PesagemService{
     @Override
     public List<Pesagem> getPesagensPorDataDetalhada(LocalDate data) {
 
-        return pesagemRepository.findByDataOrderByDataDesc(data);
+        return pesagemRepository.findByDataOrderByBoiNumero(data);
     }
 
     @Override
@@ -158,14 +158,14 @@ public class PesagemServiceImpl implements PesagemService{
         // A PESAGEM ESTA RELACIONADA A UMA TRANSACAO POIS IRIA MUDAR A SEMÂNTICA
         if(novaData == null) throw new PesagemInvalidaException("Nova data não pode ser nula");
 
-        List<Pesagem> pesagens = pesagemRepository.findByDataOrderByDataDesc(data);
+        List<Pesagem> pesagens = pesagemRepository.findByData(data);
         pesagens.stream().forEach(pesagem -> pesagem.setData(novaData));
         return pesagemRepository.saveAll(pesagens);
     }
 
     @Override
     public List<Pesagem> deletaPesagensEmLotePorData(LocalDate data) {
-        List<Pesagem> pesagens = pesagemRepository.findByDataOrderByDataDesc(data);
+        List<Pesagem> pesagens = pesagemRepository.findByData(data);
         pesagemRepository.deleteAll(pesagens);
         return pesagens;
 
