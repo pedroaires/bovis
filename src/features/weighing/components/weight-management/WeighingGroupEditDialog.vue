@@ -65,83 +65,74 @@
     </v-dialog>
 </template>
 
-<script>
+<script setup>
 import api from '@/services/api'; 
+import { watch, ref } from 'vue';
+import { formatDate } from '@/shared/utils/formatters/dateFormatter';
 
-export default {
-    name: 'WeighingGroupEditDialog',
-    props: {
-        modelValue: {
-            type: Boolean,
-            default: false,
-        },
-        groupData: {
-            type: Object,
-            default: () => ({}),
-        },
+const props = defineProps({
+    modelValue: {
+        type: Boolean,
+        default: false,
     },
-    emits: ['update:modelValue', 'close', 'group-updated'],
-    data() {
-        return {
-            novaData: null,
-            formValid: false,
-            loading: false,
-            error: null,
-            success: false,
-        }
+    groupData: {
+        type: Object,
+        default: () => ({}),
     },
-    watch: {
-        groupData: {
-            handler(newVal) {
-                if (newVal && newVal.data) {
-                    this.novaData = newVal.data;
-                    this.error = null;
-                    this.success = false;
-                }
-            },
-            immediate: true,
-            deep: true,
-        },
-        modelValue(val) {
-            if (!val) {
-                this.error = null;
-                this.success = false;
-            }
-        }
-    },
-    methods: {
-        formatDate(dateString) {
-            if (!dateString) return '—';
-            const date = new Date(dateString + 'T00:00:00'); 
-            return date.toLocaleDateString('pt-BR');
-        },
-        async saveGroupDate() {
-            if (!this.$refs.editFormRef.validate()) return;
+})
 
-            this.loading = true;
-            this.error = null;
-            this.success = false;
-            
-            const oldDate = this.groupData.data;
+const novaData = ref(null)
+const formValid = ref(false)
+const loading = ref(false)
+const error = ref(null)
+const success = ref(false)
 
-            try {
-                await api.updateGroupedWeighingDate(oldDate, this.novaData); 
-                
-                this.success = true;
-                this.$emit('group-updated');
-                // Fechar após um pequeno delay para mostrar a mensagem de sucesso
-                setTimeout(this.closeDialog, 1000); 
-            } catch (err) {
-                console.error('Erro ao salvar nova data do grupo:', err);
-                this.error = err.response?.data?.message || 'Erro ao atualizar a data do grupo. Tente novamente.';
-            } finally {
-                this.loading = false;
-            }
-        },
-        closeDialog() {
-            this.$emit('update:modelValue', false);
-            this.$emit('close');
-        }
+const editFormRef = ref(null)
+
+watch(() => props.groupData, (newVal) => {
+    if (newVal && newVal.data) {
+        novaData.value = newVal.data;
+        error.value = null;
+        success.value = false;
     }
+    
+}, {immediate: true, deep: true}
+)
+watch(() => props.modelValue, (val) => {
+    if (!val) {
+        error.value = null;
+        success.value = false;
+    }
+})
+const emit = defineEmits(['update:modelValue', 'close', 'group-updated'])
+
+
+async function saveGroupDate() {
+    const { valid } = await editFormRef.value.validate() 
+    if (!valid) return;
+
+    loading.value = true;
+    error.value = null;
+    success.value = false;
+    
+    const oldDate = props.groupData.data;
+
+    try {
+        await api.updateGroupedWeighingDate(oldDate, novaData.value); 
+        
+        success.value = true;
+        emit('group-updated');
+        // Fechar após um pequeno delay para mostrar a mensagem de sucesso
+        setTimeout(closeDialog, 1000); 
+    } catch (err) {
+        console.error('Erro ao salvar nova data do grupo:', err);
+        error.value = err.response?.data?.message || 'Erro ao atualizar a data do grupo. Tente novamente.';
+    } finally {
+        loading.value = false;
+    }
+}
+function closeDialog() {
+    emit('update:modelValue', false);
+    emit('close');
 }
 </script>
