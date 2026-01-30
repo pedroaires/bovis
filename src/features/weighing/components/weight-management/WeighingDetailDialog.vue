@@ -220,7 +220,7 @@ function confirmDeleteIndividual(pesagem) {
 
 async function handleDeleteIndividual() {
     if (!selectedWeighing.value) return;
-    const success = deleteIndividual(selectedWeighing.value.id);
+    const success = await deleteIndividual(selectedWeighing.value.id);
     if(success){
         await fetchIndividualWeighings(props.dataPesagem);
         emit('pesagem-deleted');

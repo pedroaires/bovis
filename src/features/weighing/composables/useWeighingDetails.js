@@ -23,7 +23,6 @@ export function useWeighingDetails(){
     async function deleteIndividual(weighingId) {
         try {
             loading.value = true;
-            console.log(weighingId);
             await api.deleteIndividualWeighing(weighingId); 
             return true;
         } catch (error) {
