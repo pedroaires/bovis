@@ -36,4 +36,4 @@ npm install
 npm run serve
 ```
 
-The frontend application will run on `http://localhost:8080` (or `http://localhost:8081` if port 8080 is used by backend).
+The frontend application will run on `http://localhost:3000`.

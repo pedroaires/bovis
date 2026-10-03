@@ -33,7 +33,7 @@ services:
     ports:
       - "8080:8080"
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:8080/api/listBois || exit 1"]
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8080/api/boi/listBois || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 12
