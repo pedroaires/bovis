@@ -1,6 +1,7 @@
 package bovisApp.firstApp.service;
 
 import bovisApp.firstApp.DTO.boi.BoiRequestDTO;
+import bovisApp.firstApp.DTO.pesagem.PesagemTransacaoRequestDTO;
 import bovisApp.firstApp.DTO.transacao.ItemCompraRequestDTO;
 import bovisApp.firstApp.DTO.transacao.CompraRequestDTO;
 import bovisApp.firstApp.DTO.transacao.ItemVendaRequestDTO;
@@ -8,6 +9,7 @@ import bovisApp.firstApp.DTO.transacao.VendaRequestDTO;
 import bovisApp.firstApp.exception.transacao.TransacaoInvalidaException;
 import bovisApp.firstApp.exception.transacao.TransacaoNaoEncontradaException;
 import bovisApp.firstApp.model.Boi;
+import bovisApp.firstApp.model.Pesagem;
 import bovisApp.firstApp.model.Transacao;
 import bovisApp.firstApp.model.enumeration.ModeloTransacao;
 import bovisApp.firstApp.model.enumeration.TransacaoOperacao;
@@ -63,14 +65,14 @@ public class TransacaoServiceImplTest {
         ItemCompraRequestDTO itemCompraRequestDTO = new ItemCompraRequestDTO();
         BoiRequestDTO boiRequestDTO = new BoiRequestDTO();
         itemCompraRequestDTO.setBoiRequestDTO(boiRequestDTO);
-        itemCompraRequestDTO.setPesoNaTransacao(Double.valueOf(500));
+        itemCompraRequestDTO.setPesagemDTO(new PesagemTransacaoRequestDTO(BigDecimal.valueOf(500), null));
         itemCompraRequestDTO.setValor(BigDecimal.TEN);
         return itemCompraRequestDTO;
     }
     private ItemVendaRequestDTO gerarVendaBoiDTO(Long boiId) {
         ItemVendaRequestDTO itemVendaRequestDTO = new ItemVendaRequestDTO();
         itemVendaRequestDTO.setBoiId(boiId);
-        itemVendaRequestDTO.setPesoNaTransacao(Double.valueOf(450));
+        itemVendaRequestDTO.setPesagemDTO(new PesagemTransacaoRequestDTO(BigDecimal.valueOf(450), null));
         itemVendaRequestDTO.setValor(BigDecimal.valueOf(750));
         return itemVendaRequestDTO;
     }
@@ -107,22 +109,17 @@ public class TransacaoServiceImplTest {
     void deveCadastrarCompraComDadosValidos() {
         // given
         CompraRequestDTO dto = gerarCompraRequest();
-        List<Boi> bois = List.of(gerarBoiAleatorio());
-        List<BoiRequestDTO> expectedBoiRequests = dto.getCompraBoiDTOS()
-                .stream()
-                .map(ItemCompraRequestDTO::getBoiRequestDTO)
-                .collect(Collectors.toList());
-
-        ArgumentCaptor<List<BoiRequestDTO>> boiRequestCaptor = ArgumentCaptor.forClass(List.class);
-        when(boiService.cadastraBoisComprados(boiRequestCaptor.capture())).thenReturn(bois);
+        Boi boi = gerarBoiAleatorio();
+        Pesagem pesagem = new Pesagem();
+        BoiRequestDTO expectedBoiRequest = dto.getCompraBoiDTOS().get(0).getBoiRequestDTO();
+        when(boiService.cadastraBoi(expectedBoiRequest)).thenReturn(boi);
+        when(pesagemService.criarPesagemParaTransacao(eq(boi), any(), eq(dto.getData()))).thenReturn(pesagem);
 
         // when
-        transacaoService_underTest.cadastraCompra(dto);
+        transacaoService_underTest.registraCompra(dto);
 
         // then
-            // Verifica se a lista correta foi passada para o boiService
-        List<BoiRequestDTO> capturedBoiRequests = boiRequestCaptor.getValue();
-        assertThat(capturedBoiRequests).isEqualTo(expectedBoiRequests);
+        verify(boiService).cadastraBoi(expectedBoiRequest);
 
             // Verifica se a transação foi salva corretamente
         ArgumentCaptor<Transacao> captor = ArgumentCaptor.forClass(Transacao.class);
@@ -133,7 +130,7 @@ public class TransacaoServiceImplTest {
         assertThat(saved.getOperacao()).isEqualTo(TransacaoOperacao.COMPRA);
         assertThat(saved.getContraParte()).isEqualTo(dto.getContraParte());
         assertThat(saved.getTransacaoBois()).isNotNull();
-        assertThat(saved.getTransacaoBois().size()).isEqualTo(bois.size());
+        assertThat(saved.getTransacaoBois().size()).isEqualTo(1);
     }
 
     @Test
@@ -141,23 +138,19 @@ public class TransacaoServiceImplTest {
         // given
         List<Long> boiIds = List.of(1L, 2L);
         VendaRequestDTO dto = gerarVendaRequest(boiIds);
-        List<Boi> bois = List.of(gerarBoiAleatorio(), gerarBoiAleatorio());
-
-        List<Long> expectedBoiIds = dto.getVendaBoiDTOS()
-                .stream()
-                .map(ItemVendaRequestDTO::getBoiId)
-                .collect(Collectors.toList());
-
-        ArgumentCaptor<List<Long>> boiIdsCaptor = ArgumentCaptor.forClass(List.class);
-        when(boiService.cadastraBoisVendidos(boiIdsCaptor.capture())).thenReturn(bois);
+        Boi primeiroBoi = gerarBoiAleatorio();
+        Boi segundoBoi = gerarBoiAleatorio();
+        when(boiService.atualizaBoiVendido(1L)).thenReturn(primeiroBoi);
+        when(boiService.atualizaBoiVendido(2L)).thenReturn(segundoBoi);
+        when(pesagemService.criarPesagemParaTransacao(any(Boi.class), any(), eq(dto.getData())))
+                .thenReturn(new Pesagem());
 
         // when
-        transacaoService_underTest.cadastraVenda(dto);
+        transacaoService_underTest.registraVenda(dto);
 
         // then
-            // Verifica se a lista correta foi passada para o boiService
-        List<Long> capturedBoiIds = boiIdsCaptor.getValue();
-        assertThat(capturedBoiIds).isEqualTo(expectedBoiIds);
+        verify(boiService).atualizaBoiVendido(1L);
+        verify(boiService).atualizaBoiVendido(2L);
 
             // Verifica se a transação foi salva corretamente
         ArgumentCaptor<Transacao> captor = ArgumentCaptor.forClass(Transacao.class);
@@ -167,18 +160,18 @@ public class TransacaoServiceImplTest {
         assertThat(saved.getOperacao()).isEqualTo(TransacaoOperacao.VENDA);
         assertThat(saved.getValor()).isEqualTo(dto.getValor());
         assertThat(saved.getTransacaoBois()).isNotNull();
-        assertThat(saved.getTransacaoBois().size()).isEqualTo(bois.size());
+        assertThat(saved.getTransacaoBois().size()).isEqualTo(boiIds.size());
     }
 
     @Test
     void naoDeveCadastrarCompraComDTOInvalido() {
-        assertThatThrownBy(() -> transacaoService_underTest.cadastraCompra(null))
+        assertThatThrownBy(() -> transacaoService_underTest.registraCompra(null))
                 .isInstanceOf(TransacaoInvalidaException.class);
     }
 
     @Test
     void naoDeveCadastrarVendaComDTOInvalido() {
-        assertThatThrownBy(() -> transacaoService_underTest.cadastraVenda(null))
+        assertThatThrownBy(() -> transacaoService_underTest.registraVenda(null))
                 .isInstanceOf(TransacaoInvalidaException.class);
     }
 
