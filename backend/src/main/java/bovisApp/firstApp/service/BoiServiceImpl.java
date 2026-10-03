@@ -1,102 +1,184 @@
 package bovisApp.firstApp.service;
 
+import bovisApp.firstApp.DTO.boi.BoiFilterRequestDTO;
 import bovisApp.firstApp.DTO.boi.BoiRequestDTO;
-import bovisApp.firstApp.DTO.boi.BoiResponseDTO;
-import bovisApp.firstApp.exception.BoiInvalidoException;
-import bovisApp.firstApp.exception.BoiJaExisteException;
-import bovisApp.firstApp.exception.BoiNaoEncontradoException;
+import bovisApp.firstApp.exception.boi.BoiInvalidoException;
+import bovisApp.firstApp.exception.boi.BoiNaoEncontradoException;
 import bovisApp.firstApp.model.Boi;
-import bovisApp.firstApp.model.Lote;
 import bovisApp.firstApp.model.Raca;
 import bovisApp.firstApp.model.enumeration.EstadoBoi;
+import bovisApp.firstApp.model.enumeration.TransacaoOperacao;
 import bovisApp.firstApp.repository.BoiRepository;
+import bovisApp.firstApp.specification.BoiSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-import java.util.ArrayList;
+
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class BoiServiceImpl implements BoiService {
+
     private final BoiRepository boiRepository;
-    private final LoteService loteService;
     private final RacaService racaService;
 
+
     @Autowired
-    public BoiServiceImpl(BoiRepository boiRepository, LoteService loteService, RacaService racaService) {
+    public BoiServiceImpl(
+            BoiRepository boiRepository,
+            RacaService racaService
+    )
+    {
         this.boiRepository = boiRepository;
-        this.loteService = loteService;
         this.racaService = racaService;
     }
 
     @Override
-    public List<BoiResponseDTO> getBois() {
-        List<BoiResponseDTO> responseList = new ArrayList<>();
-        for(Boi boi : boiRepository.findAll()){
-            responseList.add(new BoiResponseDTO(boi));
-        }
-        return responseList;
+    public List<Boi> getBois() {
+        return boiRepository.findAll();
     }
 
     @Override
-    public BoiResponseDTO getBoiById(Long id){
-        Boi boi = boiRepository.findById(id).orElseThrow(() -> new BoiNaoEncontradoException("Boi não encontrado"));
-        return new BoiResponseDTO(boi);
+    public Boi getBoiById(Long id){
+        return boiRepository.findById(id)
+                .orElseThrow(() -> new BoiNaoEncontradoException(id));
     }
 
     @Override
-    public BoiResponseDTO cadastraBoi(BoiRequestDTO boiRequestDTO) throws IllegalArgumentException{
-        Integer numero = Optional.ofNullable(boiRequestDTO.getNumero()).orElseThrow(
-                () -> new BoiInvalidoException("Número do boi não pode ser nulo")
+    public Boi cadastraBoi(BoiRequestDTO dto) throws IllegalArgumentException{
+        validaBoiDTO(dto);
+        Raca raca = racaService.getRacaByNome(dto.getRaca());
+        EstadoBoi estadoBoi = parseEstadoBoi(dto.getEstadoBoi());
+        Boi boi = new Boi(
+                dto.getNumero(),
+                raca,
+                estadoBoi
         );
 
-        EstadoBoi estadoBoi;
-        try{
-            estadoBoi = EstadoBoi.getEstadoBoi(boiRequestDTO.getEstadoBoi());
-        } catch (IllegalArgumentException e){
-            throw new BoiInvalidoException("Estado do boi é inválido. Use 'na_fazenda', 'vendido' ou 'morto'");
-        }
+        return boiRepository.save(boi);
+    }
 
-        Raca raca = racaService.getRacaByNome(boiRequestDTO.getRaca());
-        Lote lote = loteService.getLoteById(boiRequestDTO.getLoteId());
-        Optional<Boi> boiOp = boiRepository.findByNumeroAndLoteId(numero, lote.getId());
-        if(boiOp.isPresent()){
-            throw new BoiJaExisteException("Boi com mesmo número e lote já cadastrado");
+    private void validaBoiDTO(BoiRequestDTO dto) {
+        if(dto == null){
+            throw new BoiInvalidoException("Boi não pode ser nulo");
         }
-        Boi boi = new Boi(numero, raca, lote, estadoBoi);
+        if (dto.getNumero() == null){
+            throw new BoiInvalidoException("Número do boi não pode ser nulo");
+        }
+        if(dto.getEstadoBoi() == null | dto.getEstadoBoi().isEmpty()){
+            throw new BoiInvalidoException("Estado do boi não pode ser nulo");
+        }
+    }
 
-        boiRepository.save(boi);
-        return new BoiResponseDTO(boi);
+    private EstadoBoi parseEstadoBoi(String estado) {
+        try {
+            return EstadoBoi.getEstadoBoi(estado);
+        } catch (IllegalArgumentException e) {
+            throw new BoiInvalidoException("Estado do boi inválido. Use: 'na_fazenda', 'vendido' ou 'morto'");
+        }
     }
 
     @Override
-    public BoiResponseDTO editaBoi(BoiRequestDTO boiRequestDTO, Long id){
-        Boi boi = boiRepository.findById(id).orElseThrow(() -> new BoiNaoEncontradoException("Boi não encontrado"));
-        Integer numero = Optional.ofNullable(boiRequestDTO.getNumero()).orElseThrow(
-                () -> new BoiInvalidoException("Número do boi não pode ser nulo")
-        );
-        EstadoBoi estadoBoi;
-        try{
-            estadoBoi = EstadoBoi.getEstadoBoi(boiRequestDTO.getEstadoBoi());
-        } catch (IllegalArgumentException e){
-            throw new BoiInvalidoException("Estado do boi é inválido. Use 'na_fazenda', 'vendido' ou 'morto'");
-        }
-        Raca raca = racaService.getRacaByNome(boiRequestDTO.getRaca());
-        Lote lote = loteService.getLoteById(boiRequestDTO.getLoteId());
+    public List<Boi> cadastraBoisComprados(List<BoiRequestDTO> boisDTO) {
+        return boisDTO.stream().map(this::cadastraBoi).collect(Collectors.toList());
+    }
 
-        boi.setNumero(numero);
+    @Override
+    public Boi editaBoi(BoiRequestDTO dto, Long id){
+        Boi boi = getBoiById(id);
+        validaBoiDTO(dto);
+
+        Raca raca = racaService.getRacaByNome(dto.getRaca());
+        EstadoBoi estadoBoi = parseEstadoBoi(dto.getEstadoBoi());
+
+        boi.setNumero(dto.getNumero());
         boi.setRaca(raca);
-        boi.setLote(lote);
         boi.setEstadoBoi(estadoBoi);
-        boiRepository.save(boi);
-        return new BoiResponseDTO(boi);
+
+        return boiRepository.save(boi);
     }
 
     @Override
-    public BoiResponseDTO deleteBoi(Long id){
-        Boi boi = boiRepository.findById(id).orElseThrow(() -> new BoiNaoEncontradoException("Boi não encontrado"));
+    public List<Boi> cadastraBoisVendidos(List<Long> boisIds){
+        if(boisIds == null || boisIds.isEmpty())
+            throw new BoiInvalidoException("Ids dos bois não podem ser nulos ou estarem vazio");
+
+        return boisIds.stream().map(this::atualizaBoiVendido).collect(Collectors.toList());
+    }
+
+    @Override
+    public Boi atualizaBoiVendido(Long id){
+        Boi boi = getBoiById(id);
+        EstadoBoi estadoBoi = boi.getEstadoBoi();
+        if (!estadoBoi.equals(EstadoBoi.NA_FAZENDA)) {
+            throw new BoiInvalidoException("Boi só pode ser vendido se estiver NA_FAZENDA");
+        }
+        boi.setEstadoBoi(EstadoBoi.VENDIDO);
+        return boiRepository.save(boi);
+
+    }
+
+
+
+    @Override
+    public Boi deleteBoi(Long id){
+        Boi boi = getBoiById(id);
         boiRepository.delete(boi);
-        return new BoiResponseDTO(boi);
+        return boi;
+    }
+    private Specification<Boi> buildSpecification(BoiFilterRequestDTO filterDTO){
+        Specification<Boi> spec = Specification.where(null);
+        if (filterDTO.getRacaId() != null){
+            spec = spec.and(BoiSpecification.hasRaca(filterDTO.getRacaId()));
+        }
+        if (filterDTO.getNumeroBoi() != null){
+            spec = spec.and(BoiSpecification.hasNumero(filterDTO.getNumeroBoi()));
+        }
+        if (filterDTO.getEstadoBoi() != null){
+            EstadoBoi estadoBoi = parseEstadoBoi(filterDTO.getEstadoBoi());
+            spec = spec.and(BoiSpecification.hasEstado(estadoBoi));
+        }
+        if(filterDTO.getPesoMin() != null || filterDTO.getPesoMax() != null){
+            spec = spec.and(BoiSpecification.hasPesagemBetween(
+                    filterDTO.getPesoMin(), filterDTO.getPesoMax()
+            ));
+        }
+        if (filterDTO.getDataPesagemInicio() != null || filterDTO.getDataPesagemFim() != null){
+            spec = spec.and(BoiSpecification.hasPesagemDateBetween(
+                    filterDTO.getDataPesagemInicio(),
+                    filterDTO.getDataPesagemFim()
+            ));
+        }
+        if (filterDTO.getDataCompraInicio() != null || filterDTO.getDataCompraFim() != null){
+            spec = spec.and(BoiSpecification.hasTransacaoDataBetween(
+                    filterDTO.getDataCompraInicio(),
+                    filterDTO.getDataCompraFim(),
+                    TransacaoOperacao.COMPRA
+            ));
+        }
+        return spec;
+    }
+    @Override
+    public Page<Boi> searchBois(BoiFilterRequestDTO filterDTO, Pageable pageable) {
+        Specification<Boi> spec = buildSpecification(filterDTO);
+
+        return boiRepository.findAll(spec, pageable);
+    }
+
+    @Override
+    public Page<Boi> getBoisComPesosPorData(BoiFilterRequestDTO filterDTO, Pageable pageable) {
+        Specification<Boi> spec = buildSpecification(filterDTO);
+        spec = spec.and(BoiSpecification.fetchPesagens());
+
+        return boiRepository.findAll(spec, pageable);
+    }
+
+    @Override
+    public List<Boi> getBoisByEstado(EstadoBoi estadoBoi){
+        return boiRepository.findAllByEstadoBoi(estadoBoi);
     }
 
 

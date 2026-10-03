@@ -3,35 +3,33 @@ package bovisApp.firstApp.model;
 import bovisApp.firstApp.model.enumeration.EstadoBoi;
 
 import javax.persistence.*;
-import java.util.Date;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
-@Table
+@Table(name = "bois")
 public class Boi {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "boi_seq_gen")
+    @SequenceGenerator(name = "boi_seq_gen", sequenceName = "boi_id_seq", allocationSize = 1)
     private Long id;
     private Integer numero;
-
-    @ManyToMany
-    private Map<Date, Pesagem> pesagens;
-
-    @OneToOne
-    private Raca raca;
-
+    @OneToMany(mappedBy = "boi", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Pesagem> pesagens;
     @ManyToOne
-    private Lote lote;
+    @JoinColumn(name = "raca_id", nullable = false)
+    private Raca raca;
+    @OneToMany(mappedBy = "boi", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<TransacaoBoi> transacaoBois = new ArrayList<>();
 
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private EstadoBoi estadoBoi;
-    public Boi(int numero, String raca){ }
 
-
-    public Boi(int numero, Raca raca, Lote lote, EstadoBoi estadoBoi) {
+    public Boi(int numero, Raca raca, EstadoBoi estadoBoi) {
         this.numero = numero;
         this.raca = raca;
-        this.lote = lote;
         this.estadoBoi = estadoBoi;
     }
 
@@ -63,21 +61,14 @@ public class Boi {
         this.raca = raca;
     }
 
-    public Map<Date, Pesagem> getPesagens() {
+    public List<Pesagem> getPesagens() {
         return pesagens;
     }
 
-    public void setPesagens(Map<Date, Pesagem> pesagens) {
+    public void setPesagens(List<Pesagem> pesagens) {
         this.pesagens = pesagens;
     }
 
-    public Lote getLote() {
-        return lote;
-    }
-
-    public void setLote(Lote lote) {
-        this.lote = lote;
-    }
 
     public EstadoBoi getEstadoBoi() {
         return estadoBoi;
@@ -87,20 +78,35 @@ public class Boi {
         this.estadoBoi = estadoBoi;
     }
 
+    public List<TransacaoBoi> getTransacaoBois() {
+        return transacaoBois;
+    }
+
+    public void setTransacaoBois(List<TransacaoBoi> transacaoBois) {
+        this.transacaoBois = transacaoBois;
+    }
+
+    public void addTransacaoBoi(TransacaoBoi transacaoBoi){
+        if (this.transacaoBois == null) this.transacaoBois = new ArrayList<>();
+        this.transacaoBois.add(transacaoBoi);
+        transacaoBoi.setBoi(this);
+    }
+
+    public void removeTransacaoBoi(TransacaoBoi transacaoBoi){
+        if (this.transacaoBois != null) this.transacaoBois.remove(transacaoBoi);
+        transacaoBoi.setBoi(null);
+    }
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Boi boi = (Boi) o;
-        return Objects.equals(this.numero, boi.getNumero()) &&
-                Objects.equals(lote, boi.getLote()) &&
-                Objects.equals(raca, boi.getRaca()) &&
-                Objects.equals(estadoBoi, boi.getEstadoBoi());
+        return Objects.equals(this.id, boi.getId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(numero, raca, lote, estadoBoi);
+        return Objects.hash(this.id);
     }
 
     @Override
@@ -109,7 +115,6 @@ public class Boi {
                 "id=" + id +
                 ", numero=" + numero +
                 ", raca='" + raca + '\'' +
-                ", lote=" + lote +  '\'' +
                 ", estadoBoi=" + estadoBoi +
                 '}';
     }

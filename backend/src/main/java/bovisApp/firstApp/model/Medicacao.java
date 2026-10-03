@@ -1,16 +1,16 @@
 package bovisApp.firstApp.model;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.util.Objects;
 
 @Entity
+@Table(name = "medicacoes")
 public class Medicacao {
 
     private String nome;
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "medicacao_seq_gen")
+    @SequenceGenerator(name = "medicacao_seq_gen", sequenceName = "medicacao_id_seq", allocationSize = 1)
     private Long id;
 
     public Medicacao(String nome) {
@@ -48,5 +48,11 @@ public class Medicacao {
 
     public Long getId() {
         return id;
+    }
+
+
+    @Override
+    public String toString() {
+        return this.nome;
     }
 }

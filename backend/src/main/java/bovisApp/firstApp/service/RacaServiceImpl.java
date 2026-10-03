@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import bovisApp.firstApp.repository.RacaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -20,7 +21,8 @@ public class RacaServiceImpl implements RacaService{
     @Override
     public String normalizaRaca(String racaStr){
         if(racaStr == null || racaStr.isEmpty()) {
-            throw new IllegalArgumentException("Raca do boi nao pode ser vazia");
+
+            return "desconhecida";
         }
         String strNorm = racaStr.toLowerCase().trim();
         return strNorm;
@@ -39,5 +41,10 @@ public class RacaServiceImpl implements RacaService{
             racaRepository.save(raca);
         }
         return raca;
+    }
+
+    @Override
+    public List<Raca> getRacas(){
+        return racaRepository.findAll();
     }
 }

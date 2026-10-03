@@ -1,20 +1,36 @@
 package bovisApp.firstApp.service;
 
 
+import bovisApp.firstApp.DTO.boi.BoiFilterRequestDTO;
 import bovisApp.firstApp.DTO.boi.BoiRequestDTO;
-import bovisApp.firstApp.DTO.boi.BoiResponseDTO;
 import bovisApp.firstApp.model.Boi;
+import bovisApp.firstApp.model.enumeration.EstadoBoi;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
 public interface BoiService {
-    List<BoiResponseDTO> getBois();
+    List<Boi> getBois();
 
-    BoiResponseDTO getBoiById(Long id);
+    Boi getBoiById(Long id);
 
-    BoiResponseDTO cadastraBoi(BoiRequestDTO boiRequestDTO);
+    Boi cadastraBoi(BoiRequestDTO boiRequestDTO);
 
-    BoiResponseDTO editaBoi(BoiRequestDTO boiRequestDTO, Long boiId);
 
-    BoiResponseDTO deleteBoi(Long id);
+    List<Boi> cadastraBoisComprados(List<BoiRequestDTO> bois);
+
+    Boi editaBoi(BoiRequestDTO boiRequestDTO, Long boiId);
+
+    List<Boi> cadastraBoisVendidos(List<Long> boisIds);
+
+    Boi atualizaBoiVendido(Long id);
+
+    Boi deleteBoi(Long id);
+
+    Page<Boi> searchBois(BoiFilterRequestDTO filterDTO, Pageable pageable);
+
+    Page<Boi> getBoisComPesosPorData(BoiFilterRequestDTO filterDTO, Pageable pageable);
+
+    List<Boi> getBoisByEstado(EstadoBoi estadoBoi);
 }
