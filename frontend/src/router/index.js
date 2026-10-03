@@ -1,6 +1,12 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import DefaultLayout from '@/layouts/DefaultLayout.vue';
-import HomeView from '@/views/HomeView.vue';
+import DefaultLayout from '@/shared/layouts/DefaultLayout.vue';
+import HomeView from '@/features/cattle/views/HomeView.vue';
+import TransactionVisualizationView from '@/features/transaction/views/TransactionsVisualizationView.vue';
+import UploadPurchaseView from '@/features/transaction/views/RegisterPurchaseView.vue';
+import SellCattleView from '@/features/transaction/views/RegisterSaleView.vue';
+import RegisterWeighingView from '@/features/weighing/views/RegisterWeighingView.vue';
+import CattlePerformanceSummary from '@/features/cattle/views/CattlePerformanceView.vue';
+import WeighingGroupView from '@/features/weighing/views/WeighingGroupView.vue';
 
 const routes = [
   {
@@ -12,7 +18,36 @@ const routes = [
         name: 'Home',
         component: HomeView,
       },
-      // Outras páginas podem ser adicionadas aqui
+      {
+        path: '/cattle-visualization',
+        name: 'CattlePerformanceSummary',
+        component: CattlePerformanceSummary,
+      },
+      {
+        path: '/transactions-visualization',
+        name: 'TransactionsVisualization',
+        component: TransactionVisualizationView,
+      },
+      {
+        path: '/weighings',
+        name: 'WeighingsGroupView',
+        component: WeighingGroupView,
+      },
+      {
+        path: '/register-purchase',
+        name: 'UploadPurchase',
+        component: UploadPurchaseView,
+      },
+      {
+        path: '/register-sale',
+        name: 'SellCattleView',
+        component: SellCattleView,
+      },
+      { 
+        path: '/register-weighing',
+        name: 'RegisterWeighing',
+        component: RegisterWeighingView,
+      },
     ],
   },
 ];
