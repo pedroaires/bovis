@@ -1,6 +1,7 @@
 package bovisApp.firstApp.service;
 
 import bovisApp.firstApp.DTO.transacao.*;
+import bovisApp.firstApp.exception.OperacaoConflitanteException;
 import bovisApp.firstApp.exception.transacao.TransacaoInvalidaException;
 import bovisApp.firstApp.exception.transacao.TransacaoNaoEncontradaException;
 import bovisApp.firstApp.model.Boi;
@@ -95,11 +96,12 @@ public class TransacaoServiceImpl implements TransacaoService{
 
     @Override
     public Transacao deletaTransacao(Long id) {
-        Transacao transacao = transacaoRepository.findById(id).orElseThrow(
+        transacaoRepository.findById(id).orElseThrow(
                 () -> new TransacaoNaoEncontradaException(id)
         );
-        transacaoRepository.delete(transacao);
-        return transacao;
+        throw new OperacaoConflitanteException(
+                "Exclusão de transações está bloqueada até que a reversão dos estados dos bois seja definida"
+        );
     }
 
     @Override
@@ -109,6 +111,7 @@ public class TransacaoServiceImpl implements TransacaoService{
     }
 
     @Override
+    @Transactional
     public Transacao editaTransacao(Long id, EditaTransacaoRequestDTO dto) {
         if(dto == null){
             throw new TransacaoInvalidaException("Dados de edição não podem ser nulos");
@@ -117,9 +120,17 @@ public class TransacaoServiceImpl implements TransacaoService{
         Transacao transacao = this.getTransacaoById(id);
 
         if(dto.getValor() != null) transacao.setValor(dto.getValor());
-        if(dto.getData() != null) transacao.setData(dto.getData());
+        if(dto.getData() != null) {
+            transacao.setData(dto.getData());
+            if (transacao.getTransacaoBois() != null) {
+                transacao.getTransacaoBois().stream()
+                        .map(TransacaoBoi::getPesagem)
+                        .filter(java.util.Objects::nonNull)
+                        .forEach(pesagem -> pesagem.setData(dto.getData()));
+            }
+        }
         if(dto.getDescricao() != null) transacao.setDescricao(dto.getDescricao());
-        if(dto.getContraparte() != null) transacao.setContraParte(dto.getContraparte());
+        if(dto.getContraParte() != null) transacao.setContraParte(dto.getContraParte());
         if(dto.getModeloTransacao() != null){
             validaModeloTransacao(dto.getModeloTransacao());
             transacao.setModeloTransacao(ModeloTransacao.valueOf(dto.getModeloTransacao().toUpperCase()));
@@ -139,7 +150,7 @@ public class TransacaoServiceImpl implements TransacaoService{
         transacao.setValor(dto.getValor());
         transacao.setData(dto.getData());
         transacao.setDescricao(dto.getDescricao());
-        transacao.setModeloTransacao(ModeloTransacao.valueOf(dto.getModeloTransacao()));
+        transacao.setModeloTransacao(ModeloTransacao.valueOf(dto.getModeloTransacao().toUpperCase()));
         transacao.setContraParte(dto.getContraParte());
         transacao.setTransacaoBois(transacaoBois);
         transacao.setOperacao(operacao);

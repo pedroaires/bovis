@@ -15,6 +15,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -43,8 +44,8 @@ public class PesagemServiceImplTest {
         return (long) (Math.random() * 1000);
     }
 
-    private Double geraPesoAleatorio() {
-        return Math.random() * 100;
+    private BigDecimal geraPesoAleatorio() {
+        return BigDecimal.valueOf(Math.random() * 100);
     }
 
     private Pesagem gerarPesagemAleatoria() {

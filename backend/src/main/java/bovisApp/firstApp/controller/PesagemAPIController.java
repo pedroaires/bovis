@@ -39,7 +39,7 @@ public class PesagemAPIController {
     }
 
     @PostMapping(value = "/cadastraPesagem")
-    public PesagemResponseDTO cadastraPesagem(PesagemRequestDTO pesagemRequestDTO){
+    public PesagemResponseDTO cadastraPesagem(@RequestBody PesagemRequestDTO pesagemRequestDTO){
         PesagemResponseDTO pesagemResponseDTO = new PesagemResponseDTO(pesagemService.cadastraPesagem(pesagemRequestDTO));
         return pesagemResponseDTO;
     }

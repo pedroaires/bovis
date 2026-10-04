@@ -29,7 +29,7 @@ export function useWeighingGroup(){
             
         } catch (e) {
             console.error('Erro ao deletar grupo de pesagens:', e);
-            error.value = `Erro ao deletar grupo de pesagens:, ${e}`
+            error.value = e.response?.data?.message || 'Erro ao deletar grupo de pesagens.'
         } finally {
             loading.value = false;
         }

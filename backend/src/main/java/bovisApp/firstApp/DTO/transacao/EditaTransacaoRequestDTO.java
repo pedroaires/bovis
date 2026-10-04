@@ -11,18 +11,18 @@ public class EditaTransacaoRequestDTO {
     private LocalDate data;
     private String descricao;
     private String modeloTransacao;
-    private String contraparte;
+    private String contraParte;
 
     public EditaTransacaoRequestDTO() {
 
     }
 
-    public EditaTransacaoRequestDTO(BigDecimal valor, LocalDate data, String descricao, String modeloTransacao, String contraparte) {
+    public EditaTransacaoRequestDTO(BigDecimal valor, LocalDate data, String descricao, String modeloTransacao, String contraParte) {
         this.valor = valor;
         this.data = data;
         this.descricao = descricao;
         this.modeloTransacao = modeloTransacao;
-        this.contraparte = contraparte;
+        this.contraParte = contraParte;
     }
 
     public BigDecimal getValor() {
@@ -57,11 +57,11 @@ public class EditaTransacaoRequestDTO {
         this.modeloTransacao = modeloTransacao;
     }
 
-    public String getContraparte() {
-        return contraparte;
+    public String getContraParte() {
+        return contraParte;
     }
 
-    public void setContraparte(String contraparte) {
-        this.contraparte = contraparte;
+    public void setContraParte(String contraParte) {
+        this.contraParte = contraParte;
     }
 }

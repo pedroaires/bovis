@@ -9,6 +9,7 @@ public class PesagemAgrupadaDTO {
     private Integer totalBois;
     private BigDecimal pesoMedio;
     private BigDecimal pesoTotal;
+    private boolean possuiPesagemVinculada;
 
     public PesagemAgrupadaDTO() {
 
@@ -18,6 +19,10 @@ public class PesagemAgrupadaDTO {
         this.totalBois = totalBois.intValue();
         this.pesoMedio = pesoMedio != null ? BigDecimal.valueOf(pesoMedio) : BigDecimal.ZERO;
         this.pesoTotal = pesoTotal != null ? pesoTotal : BigDecimal.ZERO;
+    }
+    public PesagemAgrupadaDTO(LocalDate data, Long totalBois, Double pesoMedio, BigDecimal pesoTotal, Long totalVinculadas) {
+        this(data, totalBois, pesoMedio, pesoTotal);
+        this.possuiPesagemVinculada = totalVinculadas != null && totalVinculadas > 0;
     }
     public PesagemAgrupadaDTO(LocalDate data, Integer totalBois, BigDecimal pesoMedio, BigDecimal pesoTotal) {
         this.data = data;
@@ -58,4 +63,11 @@ public class PesagemAgrupadaDTO {
         this.pesoTotal = pesoTotal;
     }
 
+    public boolean isPossuiPesagemVinculada() {
+        return possuiPesagemVinculada;
+    }
+
+    public void setPossuiPesagemVinculada(boolean possuiPesagemVinculada) {
+        this.possuiPesagemVinculada = possuiPesagemVinculada;
+    }
 }

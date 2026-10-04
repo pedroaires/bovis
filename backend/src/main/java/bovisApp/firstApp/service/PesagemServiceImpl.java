@@ -1,6 +1,7 @@
 package bovisApp.firstApp.service;
 
 import bovisApp.firstApp.DTO.pesagem.*;
+import bovisApp.firstApp.exception.OperacaoConflitanteException;
 import bovisApp.firstApp.exception.pesagem.PesagemInvalidaException;
 import bovisApp.firstApp.exception.pesagem.PesagemNaoEncontradaException;
 import bovisApp.firstApp.model.Boi;
@@ -14,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.time.temporal.ChronoUnit;
@@ -83,8 +83,7 @@ public class PesagemServiceImpl implements PesagemService{
         if(dto.getPeso() == null){
             throw new PesagemInvalidaException("Peso não pode ser nulo");
         }
-        DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        String descricao = "Pesagem registrada na transação. (" + dataTransacao.format(formatador) + ")";
+        String descricao = "Pesagem registrada na transação.";
         Pesagem pesagem = new Pesagem(
                 boi,
                 dataTransacao,
@@ -97,21 +96,26 @@ public class PesagemServiceImpl implements PesagemService{
 
 
     @Override
+    @Transactional
     public Pesagem editaPesagem(PesagemRequestDTO dto, Long pesagemId) {
         validaPesagemDTO(dto);
 
-        Boi boi = boiService.getBoiById(dto.getBoiId());
         Pesagem pesagem = getPesagemById(pesagemId);
-
-        String descricao = Optional.ofNullable(dto.getDescricao()).orElse("");
-        List<String> medicacoesStr = Optional.ofNullable(dto.getMedicacoes()).orElse(Collections.emptyList());
-        List<Medicacao> medicacoes = medicacoesStr.stream().map(medicacaoService::getOrCreateMedicacao).collect(Collectors.toList());
+        validaPesagemNaoVinculada(pesagem);
+        Boi boi = boiService.getBoiById(dto.getBoiId());
 
         pesagem.setData(dto.getData());
         pesagem.setPeso(dto.getPeso());
-        pesagem.setDescricao(descricao);
-        pesagem.setMedicacoes(medicacoes);
         pesagem.setBoi(boi);
+        if (dto.getDescricao() != null) {
+            pesagem.setDescricao(dto.getDescricao());
+        }
+        if (dto.getMedicacoes() != null) {
+            List<Medicacao> medicacoes = dto.getMedicacoes().stream()
+                    .map(medicacaoService::getOrCreateMedicacao)
+                    .collect(Collectors.toList());
+            pesagem.setMedicacoes(medicacoes);
+        }
         return pesagemRepository.save(pesagem);
     }
 
@@ -154,18 +158,19 @@ public class PesagemServiceImpl implements PesagemService{
     @Override
     @Transactional
     public List<Pesagem> editaPesagensEmLotePorData(LocalDate data, LocalDate novaData) {
-        //TODO: VERIFICAR DEPENDÊNCIA COM TRANSACAO, POIS NÃO DEVE SER PERMITIDO DELETAR OU EDITAR DATA QUANDO
-        // A PESAGEM ESTA RELACIONADA A UMA TRANSACAO POIS IRIA MUDAR A SEMÂNTICA
         if(novaData == null) throw new PesagemInvalidaException("Nova data não pode ser nula");
 
         List<Pesagem> pesagens = pesagemRepository.findByData(data);
+        validaGrupoSemPesagemVinculada(pesagens);
         pesagens.stream().forEach(pesagem -> pesagem.setData(novaData));
         return pesagemRepository.saveAll(pesagens);
     }
 
     @Override
+    @Transactional
     public List<Pesagem> deletaPesagensEmLotePorData(LocalDate data) {
         List<Pesagem> pesagens = pesagemRepository.findByData(data);
+        validaGrupoSemPesagemVinculada(pesagens);
         pesagemRepository.deleteAll(pesagens);
         return pesagens;
 
@@ -196,10 +201,28 @@ public class PesagemServiceImpl implements PesagemService{
     }
 
     @Override
+    @Transactional
     public Pesagem deletaPesagem(Long id) {
         Pesagem pesagem = getPesagemById(id);
+        validaPesagemNaoVinculada(pesagem);
         pesagemRepository.delete(pesagem);
         return pesagem;
+    }
+
+    private void validaPesagemNaoVinculada(Pesagem pesagem) {
+        if (pesagem.isVinculadaTransacao()) {
+            throw new OperacaoConflitanteException(
+                    "Pesagem vinculada a uma transação não pode ser editada ou excluída por esta operação"
+            );
+        }
+    }
+
+    private void validaGrupoSemPesagemVinculada(List<Pesagem> pesagens) {
+        if (pesagens.stream().anyMatch(Pesagem::isVinculadaTransacao)) {
+            throw new OperacaoConflitanteException(
+                    "O grupo contém pesagens vinculadas a transações e não pode ser alterado"
+            );
+        }
     }
 
 

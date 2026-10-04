@@ -25,8 +25,9 @@ export function useWeighingDetails(){
             loading.value = true;
             await api.deleteIndividualWeighing(weighingId); 
             return true;
-        } catch (error) {
-            console.error('Erro ao deletar pesagem individual:', error);
+        } catch (err) {
+            console.error('Erro ao deletar pesagem individual:', err);
+            error.value = err.response?.data?.message || 'Erro ao deletar a pesagem.';
             return false;
         } finally {
             loading.value = false;

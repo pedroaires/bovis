@@ -112,13 +112,23 @@
                     <template #[`item.data`]="{ item }">
                         <div class="d-flex align-center">
                             {{ formatDate(item.data) }}
-                            <v-chip
-                                v-if="isInComparison(item.data)"
+                             <v-chip
+                                 v-if="isInComparison(item.data)"
                                 size="x-small"
                                 color="primary"
                                 class="ml-2"
                             >
-                                na comparação
+                                 na comparação
+                             </v-chip>
+                            <v-chip
+                                v-if="item.possuiPesagemVinculada"
+                                size="x-small"
+                                color="info"
+                                variant="tonal"
+                                class="ml-2"
+                                title="Este grupo contém pesagens geradas por transações"
+                            >
+                                contém transação
                             </v-chip>
                         </div>
                     </template>
@@ -145,7 +155,8 @@
                             variant="text"
                             color="warning"
                             size="small"
-                            title="Editar Data do Grupo"
+                            :title="item.possuiPesagemVinculada ? 'Grupos com pesagens de transações não podem ser editados' : 'Editar Data do Grupo'"
+                            :disabled="item.possuiPesagemVinculada"
                             @click="openEditGroupDialog(item)"
                         />
                         <v-btn
@@ -153,7 +164,8 @@
                             variant="text"
                             color="error"
                             size="small"
-                            title="Deletar Grupo"
+                            :title="item.possuiPesagemVinculada ? 'Grupos com pesagens de transações não podem ser excluídos' : 'Deletar Grupo'"
+                            :disabled="item.possuiPesagemVinculada"
                             @click="deleteGroup(item)"
                         />
                     </template>

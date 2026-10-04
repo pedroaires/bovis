@@ -11,7 +11,8 @@ import org.springframework.data.jpa.domain.Specification;
 import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Join;
-import java.util.Date;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 public class BoiSpecification {
     public static Specification<Boi> hasRaca(Long racaId){
@@ -47,7 +48,7 @@ public class BoiSpecification {
         };
     }
 
-    public static Specification<Boi> hasPesagemBetween(Double pesoMin, Double pesoMax){
+    public static Specification<Boi> hasPesagemBetween(BigDecimal pesoMin, BigDecimal pesoMax){
         return (root, query, criteriaBuilder) -> {
             if (pesoMin == null && pesoMax == null){
                 return criteriaBuilder.isTrue(criteriaBuilder.literal(true));
@@ -72,7 +73,7 @@ public class BoiSpecification {
             return predicate;
         };
     }
-    public static Specification<Boi> hasPesagemDateBetween(Date dataInicio, Date dataFim){
+    public static Specification<Boi> hasPesagemDateBetween(LocalDate dataInicio, LocalDate dataFim){
         return (root, query, criteriaBuilder) -> {
             if (dataInicio == null && dataFim == null){
                 return criteriaBuilder.isTrue(criteriaBuilder.literal(true));
@@ -97,14 +98,14 @@ public class BoiSpecification {
         };
     }
 
-    public static Specification<Boi> hasTransacaoDataBetween(Date dataInicio, Date dataFim, TransacaoOperacao operacao){
+    public static Specification<Boi> hasTransacaoDataBetween(LocalDate dataInicio, LocalDate dataFim, TransacaoOperacao operacao){
         return (root, query, criteriaBuilder) -> {
             if (dataInicio == null && dataFim == null){
                 return criteriaBuilder.isTrue(criteriaBuilder.literal(true));
             }
             query.distinct(true);
-            Join<Boi, TransacaoBoi> transacaoBoiJoin = root.join("transacoes_bois", JoinType.INNER);
-            Join<TransacaoBoi, Transacao> transacaoJoin = transacaoBoiJoin.join("transacoes", JoinType.INNER);
+            Join<Boi, TransacaoBoi> transacaoBoiJoin = root.join("transacaoBois", JoinType.INNER);
+            Join<TransacaoBoi, Transacao> transacaoJoin = transacaoBoiJoin.join("transacao", JoinType.INNER);
             Predicate predicate = criteriaBuilder.isTrue(criteriaBuilder.literal((true)));
             if(dataInicio != null){
                 predicate = criteriaBuilder.and(

@@ -25,4 +25,10 @@ public class ExceptionHandlerAdvice {
         return new CustomResponseError(e.getMessage());
     }
 
+    @ExceptionHandler(OperacaoConflitanteException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public CustomResponseError handleOperacaoConflitante(OperacaoConflitanteException e) {
+        return new CustomResponseError(e.getMessage());
+    }
+
 }

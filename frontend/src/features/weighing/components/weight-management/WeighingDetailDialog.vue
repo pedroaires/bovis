@@ -45,7 +45,16 @@
                                 <tr v-for="pesagem in weighings" :key="pesagem.id">
                                     <td>
                                         <div class="d-flex align-center ga-2">
-                                            {{ pesagem.numeroBoi || '-' }}
+                                             {{ pesagem.numeroBoi || '-' }}
+                                            <v-chip
+                                                v-if="pesagem.vinculadaTransacao"
+                                                size="x-small"
+                                                color="info"
+                                                variant="tonal"
+                                                title="Pesagem gerada por uma transação"
+                                            >
+                                                Transação
+                                            </v-chip>
                                             <v-tooltip 
                                                 v-if="pesagem.descricao" 
                                                 location="top"
@@ -91,7 +100,8 @@
                                             variant="text"
                                             color="warning"
                                             size="small"
-                                            title="Editar Pesagem Individual"
+                                            :title="pesagem.vinculadaTransacao ? 'Pesagens de transações devem ser corrigidas pela transação' : 'Editar Pesagem Individual'"
+                                            :disabled="pesagem.vinculadaTransacao"
                                             @click="openEditDialog(pesagem)"
                                         />
                                         <v-btn
@@ -99,7 +109,8 @@
                                             variant="text"
                                             color="error"
                                             size="small"
-                                            title="Deletar Pesagem Individual"
+                                            :title="pesagem.vinculadaTransacao ? 'Pesagens de transações não podem ser excluídas individualmente' : 'Deletar Pesagem Individual'"
+                                            :disabled="pesagem.vinculadaTransacao"
                                             @click="confirmDeleteIndividual(pesagem)"
                                         />
                                     </td>

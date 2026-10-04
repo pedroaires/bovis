@@ -2,22 +2,23 @@ package bovisApp.firstApp.DTO.boi;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
-import java.util.Date;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 public class BoiFilterRequestDTO {
     private Long racaId;
-    private Double pesoMin;
-    private Double pesoMax;
+    private BigDecimal pesoMin;
+    private BigDecimal pesoMax;
 
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private Date dataPesagemInicio;
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private Date dataPesagemFim;
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    private LocalDate dataPesagemInicio;
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    private LocalDate dataPesagemFim;
 
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private Date dataCompraInicio;
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private Date dataCompraFim;
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    private LocalDate dataCompraInicio;
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    private LocalDate dataCompraFim;
 
     private Integer numeroBoi;
     private String estadoBoi;
@@ -26,7 +27,7 @@ public class BoiFilterRequestDTO {
 
     }
 
-    public BoiFilterRequestDTO(Long racaId, Double pesoMin, Double pesoMax, Date dataPesagemInicio, Date dataPesagemFim, Date dataCompraInicio, Date dataCompraFim, Integer numeroBoi, String estadoBoi) {
+    public BoiFilterRequestDTO(Long racaId, BigDecimal pesoMin, BigDecimal pesoMax, LocalDate dataPesagemInicio, LocalDate dataPesagemFim, LocalDate dataCompraInicio, LocalDate dataCompraFim, Integer numeroBoi, String estadoBoi) {
         this.racaId = racaId;
         this.pesoMin = pesoMin;
         this.pesoMax = pesoMax;
@@ -46,51 +47,51 @@ public class BoiFilterRequestDTO {
         this.racaId = racaId;
     }
 
-    public Double getPesoMin() {
+    public BigDecimal getPesoMin() {
         return pesoMin;
     }
 
-    public void setPesoMin(Double pesoMin) {
+    public void setPesoMin(BigDecimal pesoMin) {
         this.pesoMin = pesoMin;
     }
 
-    public Double getPesoMax() {
+    public BigDecimal getPesoMax() {
         return pesoMax;
     }
 
-    public void setPesoMax(Double pesoMax) {
+    public void setPesoMax(BigDecimal pesoMax) {
         this.pesoMax = pesoMax;
     }
 
-    public Date getDataPesagemInicio() {
+    public LocalDate getDataPesagemInicio() {
         return dataPesagemInicio;
     }
 
-    public void setDataPesagemInicio(Date dataPesagemInicio) {
+    public void setDataPesagemInicio(LocalDate dataPesagemInicio) {
         this.dataPesagemInicio = dataPesagemInicio;
     }
 
-    public Date getDataPesagemFim() {
+    public LocalDate getDataPesagemFim() {
         return dataPesagemFim;
     }
 
-    public void setDataPesagemFim(Date dataPesagemFim) {
+    public void setDataPesagemFim(LocalDate dataPesagemFim) {
         this.dataPesagemFim = dataPesagemFim;
     }
 
-    public Date getDataCompraInicio() {
+    public LocalDate getDataCompraInicio() {
         return dataCompraInicio;
     }
 
-    public void setDataCompraInicio(Date dataCompraInicio) {
+    public void setDataCompraInicio(LocalDate dataCompraInicio) {
         this.dataCompraInicio = dataCompraInicio;
     }
 
-    public Date getDataCompraFim() {
+    public LocalDate getDataCompraFim() {
         return dataCompraFim;
     }
 
-    public void setDataCompraFim(Date dataCompraFim) {
+    public void setDataCompraFim(LocalDate dataCompraFim) {
         this.dataCompraFim = dataCompraFim;
     }
 

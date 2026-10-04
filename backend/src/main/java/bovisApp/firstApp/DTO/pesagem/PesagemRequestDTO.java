@@ -13,6 +13,9 @@ public class PesagemRequestDTO {
 
     private List<String> medicacoes;
 
+    public PesagemRequestDTO() {
+    }
+
     public PesagemRequestDTO(Long boiId, BigDecimal peso, String descricao, LocalDate data, List<String> medicacoes) {
         this.boiId = boiId;
         this.peso = peso;

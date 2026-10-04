@@ -68,7 +68,7 @@ public class BoiServiceImpl implements BoiService {
         if (dto.getNumero() == null){
             throw new BoiInvalidoException("Número do boi não pode ser nulo");
         }
-        if(dto.getEstadoBoi() == null | dto.getEstadoBoi().isEmpty()){
+        if(dto.getEstadoBoi() == null || dto.getEstadoBoi().isEmpty()){
             throw new BoiInvalidoException("Estado do boi não pode ser nulo");
         }
     }

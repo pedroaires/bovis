@@ -3,7 +3,6 @@ package bovisApp.firstApp.model;
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -26,6 +25,9 @@ public class Pesagem {
 
     @ManyToMany
     private List<Medicacao> medicacoes;
+
+    @OneToOne(mappedBy = "pesagem", fetch = FetchType.LAZY)
+    private TransacaoBoi transacaoBoi;
 
 
     public Pesagem(LocalDate data, BigDecimal peso, String descricao, List<Medicacao> medicacoes) {
@@ -92,6 +94,18 @@ public class Pesagem {
     }
     public Boi getBoi() {
         return boi;
+    }
+
+    public TransacaoBoi getTransacaoBoi() {
+        return transacaoBoi;
+    }
+
+    public void setTransacaoBoi(TransacaoBoi transacaoBoi) {
+        this.transacaoBoi = transacaoBoi;
+    }
+
+    public boolean isVinculadaTransacao() {
+        return transacaoBoi != null;
     }
 
     @Override

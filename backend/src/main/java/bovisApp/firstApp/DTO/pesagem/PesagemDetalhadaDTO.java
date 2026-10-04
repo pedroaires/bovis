@@ -17,6 +17,7 @@ public class PesagemDetalhadaDTO {
     private List<String> medicacoes;
 
     private String descricao;
+    private boolean vinculadaTransacao;
 
     public PesagemDetalhadaDTO() {
 
@@ -28,6 +29,7 @@ public class PesagemDetalhadaDTO {
                 .stream().map(medicacao -> medicacao.toString())
                 .collect(Collectors.toList());
         this.descricao = pesagem.getDescricao();
+        this.vinculadaTransacao = pesagem.isVinculadaTransacao();
         if(pesagem.getBoi() != null){
             this.boiId = pesagem.getBoi().getId();
             this.racaBoi = pesagem.getBoi().getRaca().toString();
@@ -37,7 +39,7 @@ public class PesagemDetalhadaDTO {
 
     }
 
-    public PesagemDetalhadaDTO(Long id, Long boiId, Integer numeroBoi, String racaBoi, BigDecimal peso, List<String> medicacoes, String descricao) {
+    public PesagemDetalhadaDTO(Long id, Long boiId, Integer numeroBoi, String racaBoi, BigDecimal peso, List<String> medicacoes, String descricao, boolean vinculadaTransacao) {
         this.id = id;
         this.boiId = boiId;
         this.numeroBoi = numeroBoi;
@@ -45,6 +47,7 @@ public class PesagemDetalhadaDTO {
         this.peso = peso;
         this.medicacoes = medicacoes;
         this.descricao = descricao;
+        this.vinculadaTransacao = vinculadaTransacao;
     }
 
     public Long getId() {
@@ -101,5 +104,13 @@ public class PesagemDetalhadaDTO {
 
     public void setDescricao(String descricao) {
         this.descricao = descricao;
+    }
+
+    public boolean isVinculadaTransacao() {
+        return vinculadaTransacao;
+    }
+
+    public void setVinculadaTransacao(boolean vinculadaTransacao) {
+        this.vinculadaTransacao = vinculadaTransacao;
     }
 }

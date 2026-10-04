@@ -1,8 +1,6 @@
 package bovisApp.firstApp.model;
 
 
-import org.springframework.context.annotation.EnableMBeanExport;
-
 import javax.persistence.*;
 import java.math.BigDecimal;
 
@@ -32,7 +30,7 @@ public class TransacaoBoi {
 
     public TransacaoBoi(BigDecimal valor, Pesagem pesagem, Boi boi, Transacao transacao) {
         this.valor = valor;
-        this.pesagem = pesagem;
+        setPesagem(pesagem);
         this.boi = boi;
         this.transacao = transacao;
     }
@@ -40,7 +38,7 @@ public class TransacaoBoi {
     public TransacaoBoi(Long id, BigDecimal valor, Pesagem pesagem, Boi boi, Transacao transacao) {
         this.id = id;
         this.valor = valor;
-        this.pesagem = pesagem;
+        setPesagem(pesagem);
         this.boi = boi;
         this.transacao = transacao;
     }
@@ -67,6 +65,9 @@ public class TransacaoBoi {
 
     public void setPesagem(Pesagem pesagem) {
         this.pesagem = pesagem;
+        if (pesagem != null) {
+            pesagem.setTransacaoBoi(this);
+        }
     }
 
     public Boi getBoi() {
